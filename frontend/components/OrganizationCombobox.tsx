@@ -16,8 +16,8 @@ interface Options {
 }
 
 interface ComboboxProps {
-    state: any;
-    dispatch: Dispatch<any>;
+    state: unknown;
+    dispatch: Dispatch<unknown>;
 }
 
 const OrganizationCombobox: FC<ComboboxProps> = ({ state, dispatch }) => {

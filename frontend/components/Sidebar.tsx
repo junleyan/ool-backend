@@ -6,8 +6,8 @@ import TagMultiSelectCombobox from "./TagMultiSelectCombobox";
 import GroupMultiSelectCombobox from "./GroupMultiSelectCombobox";
 
 type SidebarProps = {
-    state: any;
-    dispatch: Dispatch<any>;
+    state: unknown;
+    dispatch: Dispatch<unknown>;
 };
 
 const Sidebar: React.FC<SidebarProps> = ({ state, dispatch }) => {
