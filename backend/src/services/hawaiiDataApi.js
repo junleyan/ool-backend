@@ -58,8 +58,8 @@ export const getOrganizationList = async () => {
                 .filter(({ package_count }) => package_count > 0)
                 .sort((organizationA, organizationB) => organizationB.package_count - organizationA.package_count)
                 .map(({ display_name, name, package_count }) => ({
-                    display_name,
-                    name,
+                    label: display_name,
+                    value: name,
                     count: package_count
                 }));
         } else {
@@ -87,8 +87,8 @@ export const getGroupList = async () => {
                 .filter(({ package_count }) => package_count > 0)
                 .sort((groupA, groupB) => groupB.package_count - groupA.package_count)
                 .map(({ display_name, name, package_count }) => ({
-                    display_name,
-                    name,
+                    label: display_name,
+                    value: name,
                     count: package_count
                 }));
         } else {
