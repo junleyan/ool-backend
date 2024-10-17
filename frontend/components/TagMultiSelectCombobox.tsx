@@ -18,8 +18,8 @@ interface Options {
 }
 
 interface ComboboxProps {
-    state: any;
-    dispatch: Dispatch<any>;
+    state: unknown;
+    dispatch: Dispatch<unknown>;
 }
 
 const TagMultiSelectCombobox: FC<ComboboxProps> = ({ state, dispatch }) => {
