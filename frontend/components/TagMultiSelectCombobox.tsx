@@ -116,7 +116,7 @@ const TagMultiSelectCombobox: FC<ComboboxProps> = ({ state, dispatch }) => {
                                     {option.label}
                                     <Button
                                         variant="ghost"
-                                        size="icon"
+                                        size="xs"
                                         className="ml-1 p-0"
                                         onClick={(e) => {
                                             e.stopPropagation();
