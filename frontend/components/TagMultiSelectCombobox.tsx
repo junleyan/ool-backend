@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { data } from "@/utils/data";
 import { Dispatch, FC, useEffect, useState } from "react";
 import { ScrollArea } from "./ui/scroll-area";
+import { State } from "./App";
 
 interface OptionItem {
     value: string;
@@ -18,8 +19,8 @@ interface Options {
 }
 
 interface ComboboxProps {
-    state: unknown;
-    dispatch: Dispatch<unknown>;
+    state: State;
+    dispatch: Dispatch<{ type: string; payload: unknown }>;
 }
 
 const TagMultiSelectCombobox: FC<ComboboxProps> = ({ state, dispatch }) => {
@@ -115,7 +116,7 @@ const TagMultiSelectCombobox: FC<ComboboxProps> = ({ state, dispatch }) => {
                                     {option.label}
                                     <Button
                                         variant="ghost"
-                                        size="xs"
+                                        size="icon"
                                         className="ml-1 p-0"
                                         onClick={(e) => {
                                             e.stopPropagation();

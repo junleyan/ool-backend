@@ -4,11 +4,12 @@ import OrganizationCombobox from "./OrganizationCombobox";
 import { ScrollArea } from "./ui/scroll-area";
 import TagMultiSelectCombobox from "./TagMultiSelectCombobox";
 import GroupMultiSelectCombobox from "./GroupMultiSelectCombobox";
+import { State } from "./App";
 
-type SidebarProps = {
-    state: unknown;
-    dispatch: Dispatch<unknown>;
-};
+interface SidebarProps {
+    state: State;
+    dispatch: Dispatch<{ type: string; payload: unknown }>;
+}
 
 const Sidebar: React.FC<SidebarProps> = ({ state, dispatch }) => {
     return (

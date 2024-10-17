@@ -5,6 +5,7 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { data } from "@/utils/data";
 import { Dispatch, FC, useEffect, useState } from "react";
+import { State } from "./App";
 
 interface OptionItem {
     value: string;
@@ -16,8 +17,8 @@ interface Options {
 }
 
 interface ComboboxProps {
-    state: unknown;
-    dispatch: Dispatch<unknown>;
+    state: State;
+    dispatch: Dispatch<{ type: string; payload: unknown }>;
 }
 
 const OrganizationCombobox: FC<ComboboxProps> = ({ state, dispatch }) => {
