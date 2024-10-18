@@ -88,7 +88,7 @@ const OrganizationCombobox: FC<ComboboxProps> = ({ state, dispatch }) => {
                     </Command>
                 </PopoverContent>
             </Popover>
-            <p className="text-xs text-gray-600 mt-1 ml-1">
+            <p className="text-xs text-gray-600 mt-1 mb-5 ml-1">
                 Filter datasets by selecting a publishing organization.
             </p>
         </>

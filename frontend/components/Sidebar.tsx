@@ -14,7 +14,7 @@ interface SidebarProps {
 const Sidebar: React.FC<SidebarProps> = ({ state, dispatch }) => {
     return (
         <div className="flex h-full flex-col items-center justify-start p-6">
-            <div className="flex items-center mb-4">
+            <div className="flex mb-5">
                 <Image
                     src="https://upload.wikimedia.org/wikipedia/commons/c/ca/Seal_of_the_State_of_Hawaii.svg"
                     alt="Seal of the State of Hawaii"
