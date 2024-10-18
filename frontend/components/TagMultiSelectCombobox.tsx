@@ -54,6 +54,10 @@ const TagMultiSelectCombobox: FC<ComboboxProps> = ({ state, dispatch }) => {
         dispatch({ type: "tags", payload: newSelected });
     };
 
+    const handleClearAll = () => {
+        dispatch({ type: "tags", payload: [] });
+    };
+
     return (
         <>
             <p className="text-sm font-bold text-gray-800 mt-3 mb-1 ml-1">
@@ -101,14 +105,21 @@ const TagMultiSelectCombobox: FC<ComboboxProps> = ({ state, dispatch }) => {
                     </Command>
                 </PopoverContent>
             </Popover>
-            <p className="text-xs text-gray-600 mt-1 mb-2 ml-1">
-                Filter datasets by selecting tags.
+            <p className="text-xs text-gray-600 mt-1 ml-1">
+                Filter datasets by selecting groups.
             </p>
+            {
+                state.tags.length > 0 && (
+                    <p className="text-xs text-blue-500 mb-1 ml-1">
+                        <a href="#" onClick={handleClearAll}>Clear filters</a>
+                    </p>
+                )
+            }
 
             {/* Display selected tags as badges with a maximum height and scrollable area */}
             <ScrollArea className="max-h-30 overflow-y-auto"> {/* Set max height and enable vertical scrolling */}
                 <div className="flex flex-wrap items-center gap-1 mb-2 mt-2">
-                    {state.tags.length > 0 ? (
+                    {state.tags.length > 0 && (
                         state.tags.map((value: string) => {
                             const option = options.tagOptions.find((option) => option.value === value);
                             return option ? (
@@ -128,8 +139,6 @@ const TagMultiSelectCombobox: FC<ComboboxProps> = ({ state, dispatch }) => {
                                 </Badge>
                             ) : null;
                         })
-                    ) : (
-                        <span className="text-gray-500 text-sm ml-1">No tags selected</span>
                     )}
                 </div>
             </ScrollArea>
