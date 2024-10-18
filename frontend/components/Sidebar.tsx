@@ -15,14 +15,14 @@ interface SidebarProps {
 const Sidebar: React.FC<SidebarProps> = ({ state, dispatch }) => {
     return (
         <div className="flex h-full flex-col items-center justify-start p-6">
-            <div className="flex">
+            <div className="flex items-center">
                 <Image
                     src="https://upload.wikimedia.org/wikipedia/commons/c/ca/Seal_of_the_State_of_Hawaii.svg"
                     alt="Seal of the State of Hawaii"
                     width={75}
                     height={75} />
                 <div className="ml-4">
-                    <p className="text-lg font-bold">Hawaii Open Data</p>
+                    <p className="text-base font-bold">Hawaii Open Data</p>
                     <p className="text-sm text-gray-700">Government that is</p>
                     <p className="text-sm text-gray-700"><b>open</b> and <b>transparent</b></p>
                 </div>
