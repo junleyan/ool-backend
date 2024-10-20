@@ -106,7 +106,7 @@ const TagMultiSelectCombobox: FC<ComboboxProps> = ({ state, dispatch }) => {
                 </PopoverContent>
             </Popover>
             <p className="text-xs text-gray-600 mt-1 ml-1">
-                Filter datasets by selecting groups.
+                Filter datasets by selecting tags.
             </p>
             {
                 state.tags.length > 0 && (
