@@ -1,6 +1,6 @@
 import { HttpStatusCode } from "axios";
 import { sendJsonResponse } from "../utils/jsonResponse.js";
-import { getFilteredDataset, getGroupList, getOrganizationList, getTagList } from "../services/hawaiiDataApi.js";
+import { getFilters, getFilteredDataset, getGroupList, getOrganizationList, getTagList } from "../services/hawaiiDataApi.js";
 
 export const handleGetFilteredDataset = async (req, res) => {
     const { organization, groups, tags, formats, licenses } = req.query;
@@ -16,6 +16,14 @@ export const handleGetFilteredDataset = async (req, res) => {
                         );
     } catch (error) {
         sendJsonResponse(res, HttpStatusCode.BadRequest, 'Error fetching filtered dataset');
+    }
+};
+
+export const handleGetFilters = async (req, res) => {
+    try {
+        sendJsonResponse(res, HttpStatusCode.Ok, '', await getFilters());
+    } catch (error) {
+        sendJsonResponse(res, HttpStatusCode.BadRequest, 'Error fetching dataset list');
     }
 };
 
