@@ -3,18 +3,8 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { data } from "@/utils/data";
-import { Dispatch, FC, useEffect, useState } from "react";
+import { Dispatch, FC } from "react";
 import { State } from "./App";
-
-interface OptionItem {
-    value: string;
-    label: string;
-}
-
-interface Options {
-    organizationOptions: OptionItem[];
-}
 
 interface ComboboxProps {
     state: State;
@@ -22,19 +12,6 @@ interface ComboboxProps {
 }
 
 const OrganizationCombobox: FC<ComboboxProps> = ({ state, dispatch }) => {
-    const [options, setOptions] = useState<Options>({
-        organizationOptions: [],
-    });
-
-    useEffect(() => {
-        const axiosHandler = async () => {
-            const ORGANIZATIONS = await data.getOrganizationOptions();
-            setOptions({
-                organizationOptions: ORGANIZATIONS,
-            });
-        };
-        axiosHandler();
-    }, []);
 
     const handleSelect = (currentValue: string) => {
         const newValue = currentValue === state.organization ? "" : currentValue;
@@ -53,10 +30,10 @@ const OrganizationCombobox: FC<ComboboxProps> = ({ state, dispatch }) => {
                         variant="outline"
                         role="combobox"
                         className="w-60 justify-between border border-gray-300 rounded-md shadow-sm bg-white text-gray-900 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 truncate"
-                        disabled={options.organizationOptions.length === 0}
+                        disabled={state?.filters?.organizations.length === 0}
                     >
                         {state.organization ? (
-                            <span className='truncate'>{options.organizationOptions.find((option) => option.value === state.organization)?.label}</span>
+                            <span className='truncate'>{state?.filters?.organizations.find((option) => option.value === state.organization)?.label}</span>
                         ) : "Select organization..."}
                         <CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                     </Button>
@@ -67,7 +44,7 @@ const OrganizationCombobox: FC<ComboboxProps> = ({ state, dispatch }) => {
                         <CommandList>
                             <CommandEmpty>No organizations found. Please try a different keyword.</CommandEmpty>
                             <CommandGroup>
-                                {options.organizationOptions.map((option) => (
+                                {state?.filters?.organizations.map((option) => (
                                     <CommandItem
                                         key={option.value}
                                         value={option.value}
