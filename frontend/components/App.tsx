@@ -2,6 +2,7 @@
 
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup} from "@/components/ui/resizable";
 import Sidebar from "./Sidebar";
+import DatasetTable from "./DatasetTable";
 import { useReducer } from "react";
 
 export interface State {
@@ -43,7 +44,7 @@ const App = () => {
                 <ResizableHandle withHandle />
                 <ResizablePanel defaultSize={80}>
                     <div className="flex h-full items-center justify-center p-6">
-                        <span className="font-semibold">Content</span>
+                        <DatasetTable organization={state.organization} groups={state.groups} tags={state.tags} />
                     </div>
                 </ResizablePanel>
             </ResizablePanelGroup>
