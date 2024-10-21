@@ -1,7 +1,7 @@
 import axios from 'axios'
 import { TAG_LIST } from '../utils/tagList.js';
 
-const API_URL = 'https://opendata.hawaii.gov/api/3'
+const API_URL = 'https://opendata.hawaii.gov';
 
 export const getFilteredDataset = async (organization, groups, tags, formats, licenses) => {
     try {
@@ -24,7 +24,7 @@ export const getFilteredDataset = async (organization, groups, tags, formats, li
             fqQuery += `+AND+${LICENSES_QUERY}`;
         }
 
-        const RESPONSE = await axios.get(`${API_URL}/action/package_search?fq=${fqQuery}`);
+        const RESPONSE = await axios.get(`${API_URL}/api/3/action/package_search?fq=${fqQuery}`);
         const DATA = RESPONSE.data;
         const SUCCESS = DATA.success;
         
@@ -44,8 +44,8 @@ export const getFilteredDataset = async (organization, groups, tags, formats, li
 export const getFilters = async () => {
     try {
         const [FIRST_RESPONSE, SECOND_RESPONSE] = await Promise.all([
-            axios.get(`${API_URL}/action/package_search?rows=999`),
-            axios.get(`${API_URL}/action/package_search?rows=999&start=1000`)
+            axios.get(`${API_URL}/api/3/action/package_search?rows=999`),
+            axios.get(`${API_URL}/api/3/action/package_search?rows=999&start=1000`)
         ]);
 
         const DATA = [...FIRST_RESPONSE.data.result.results, ...SECOND_RESPONSE.data.result.results];
@@ -67,6 +67,7 @@ export const getFilters = async () => {
                         ORGANIZATION_MAP[ORG_KEY] = {
                             label: organization.title,
                             value: organization.name,
+                            image_url: organization.image_url.length > 0 ? `${API_URL}/uploads/group/${organization.image_url}` : null,
                             count: 1
                         };
                     }
@@ -80,7 +81,7 @@ export const getFilters = async () => {
                         } else {
                             GROUP_MAP[GROUP_KEY] = {
                                 label: group.display_name,
-                                image_display_url: group.image_display_url,
+                                image_url: group.image_display_url,
                                 value: group.name,
                                 count: 1
                             };
@@ -157,7 +158,7 @@ export const getFilters = async () => {
 
 export const getOrganizationList = async () => {
     try {
-        const RESPONSE = await axios.get(`${API_URL}/action/organization_list`);
+        const RESPONSE = await axios.get(`${API_URL}/api/3/action/organization_list`);
         const DATA = RESPONSE.data;
         const SUCCESS = DATA.success;
         
@@ -186,7 +187,7 @@ export const getOrganizationList = async () => {
 
 export const getGroupList = async () => {
     try {
-        const RESPONSE = await axios.get(`${API_URL}/action/group_list`);
+        const RESPONSE = await axios.get(`${API_URL}/api/3/action/group_list`);
         const DATA = RESPONSE.data;
         const SUCCESS = DATA.success;
         
