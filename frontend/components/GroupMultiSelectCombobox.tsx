@@ -4,19 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Badge } from "@/components/ui/badge";
-import { data } from "@/utils/data";
-import { Dispatch, FC, useEffect, useState } from "react";
+import { Dispatch, FC } from "react";
 import { ScrollArea } from "./ui/scroll-area";
 import { State } from "./App";
-
-interface OptionItem {
-    value: string;
-    label: string;
-}
-
-interface Options {
-    groupOptions: OptionItem[];
-}
 
 interface ComboboxProps {
     state: State;
@@ -24,19 +14,6 @@ interface ComboboxProps {
 }
 
 const GroupMultiSelectCombobox: FC<ComboboxProps> = ({ state, dispatch }) => {
-    const [options, setOptions] = useState<Options>({
-        groupOptions: [],
-    });
-
-    useEffect(() => {
-        const axiosHandler = async () => {
-            const GROUPS = await data.getGroupOptions();
-            setOptions({
-                groupOptions: GROUPS,
-            });
-        };
-        axiosHandler();
-    }, []);
 
     const handleSelect = (currentValue: string) => {
         const isSelected = state.groups.includes(currentValue);
@@ -72,7 +49,7 @@ const GroupMultiSelectCombobox: FC<ComboboxProps> = ({ state, dispatch }) => {
                         variant="outline"
                         role="combobox"
                         className="w-60 justify-between border border-gray-300 rounded-md shadow-sm bg-white text-gray-900 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 truncate"
-                        disabled={options.groupOptions.length === 0}
+                        disabled={state?.filters?.groups.length === 0}
                     >
                         <span>{state.groups.length > 0 ? "Edit groups..." : "Select groups..."}</span>
                         <CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -84,7 +61,7 @@ const GroupMultiSelectCombobox: FC<ComboboxProps> = ({ state, dispatch }) => {
                         <CommandList>
                             <CommandEmpty>No groups found. Please try a different keyword.</CommandEmpty>
                             <CommandGroup>
-                                {options.groupOptions.map((option) => (
+                                {state?.filters?.groups.map((option) => (
                                     <CommandItem
                                         key={option.value}
                                         value={option.value}
@@ -121,7 +98,7 @@ const GroupMultiSelectCombobox: FC<ComboboxProps> = ({ state, dispatch }) => {
                 <div className="flex flex-wrap items-center gap-1 mb-2 mt-2">
                     {state.groups.length > 0 && (
                         state.groups.map((value: string) => {
-                            const option = options.groupOptions.find((option) => option.value === value);
+                            const option = state?.filters?.groups.find((option) => option.value === value);
                             return option ? (
                                 <Badge key={option.value} variant="secondary" className="flex items-center truncate">
                                     {option.label}
