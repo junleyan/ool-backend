@@ -6,62 +6,66 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Badge } from "@/components/ui/badge";
 import { Dispatch, FC } from "react";
 import { ScrollArea } from "./ui/scroll-area";
-import { State } from "./App";
 
-interface ComboboxProps {
-    state: State;
+interface MultiSelectComboboxProps {
+    label: string;
+    selectedItems: string[];
+    items: { label: string; value: string }[];
     dispatch: Dispatch<{ type: string; payload: unknown }>;
+    stateKey: string; // Either 'groups', 'tags', or another key for selected items
 }
 
-const GroupMultiSelectCombobox: FC<ComboboxProps> = ({ state, dispatch }) => {
-
+const MultiSelectCombobox: FC<MultiSelectComboboxProps> = ({
+    label,
+    selectedItems,
+    items,
+    dispatch,
+    stateKey,
+}) => {
     const handleSelect = (currentValue: string) => {
-        const isSelected = state.groups.includes(currentValue);
+        const isSelected = selectedItems.includes(currentValue);
         let newSelected;
         if (isSelected) {
-            newSelected = state.groups.filter((value: string) => value !== currentValue);
+            newSelected = selectedItems.filter((value: string) => value !== currentValue);
         } else {
-            newSelected = [...state.groups, currentValue];
+            newSelected = [...selectedItems, currentValue];
         }
-        dispatch({ type: "groups", payload: newSelected });
+        dispatch({ type: stateKey, payload: newSelected });
     };
 
-    const handleRemoveGroup = (value: string) => {
-        const newSelected = state.groups.filter((group: string) => group !== value);
-        dispatch({ type: "groups", payload: newSelected });
+    const handleRemoveItem = (value: string) => {
+        const newSelected = selectedItems.filter((item: string) => item !== value);
+        dispatch({ type: stateKey, payload: newSelected });
     };
 
     const handleClearAll = () => {
-        dispatch({ type: "groups", payload: [] });
+        dispatch({ type: stateKey, payload: [] });
     };
 
     return (
         <>
-            <p className="text-sm font-bold text-gray-800 mt-3 mb-1 ml-1">
-                Groups
-            </p>
+            <p className="text-sm font-bold text-gray-800 mt-3 mb-1 ml-1">{label}</p>
 
-            {/* Dropdown to select groups */}
+            {/* Dropdown to select items */}
             <Popover>
                 <PopoverTrigger asChild>
                     <Button
-                        id="group-select"
                         variant="outline"
                         role="combobox"
                         className="w-60 justify-between border border-gray-300 rounded-md shadow-sm bg-white text-gray-900 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 truncate"
-                        disabled={state?.filters?.groups.length === 0}
+                        disabled={items.length === 0}
                     >
-                        <span>{state.groups.length > 0 ? "Edit groups..." : "Select groups..."}</span>
+                        <span>{selectedItems.length > 0 ? `Edit ${label.toLowerCase()}...` : `Select ${label.toLowerCase()}...`}</span>
                         <CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                     </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-60 p-0 border border-gray-300 rounded-md shadow-lg">
                     <Command>
-                        <CommandInput placeholder="Search groups..." className="h-8 px-3 my-2 border-b border-gray-300" />
+                        <CommandInput placeholder={`Search ${label.toLowerCase()}...`} className="h-8 px-3 my-2 border-b border-gray-300" />
                         <CommandList>
-                            <CommandEmpty>No groups found. Please try a different keyword.</CommandEmpty>
+                            <CommandEmpty>No {label.toLowerCase()} found. Please try a different keyword.</CommandEmpty>
                             <CommandGroup>
-                                {state?.filters?.groups.map((option) => (
+                                {items.map((option) => (
                                     <CommandItem
                                         key={option.value}
                                         value={option.value}
@@ -70,10 +74,7 @@ const GroupMultiSelectCombobox: FC<ComboboxProps> = ({ state, dispatch }) => {
                                     >
                                         {option.label}
                                         <CheckIcon
-                                            className={cn(
-                                                "ml-auto h-4 w-4",
-                                                state.groups.includes(option.value) ? "opacity-100" : "opacity-0"
-                                            )}
+                                            className={cn("ml-auto h-4 w-4", selectedItems.includes(option.value) ? "opacity-100" : "opacity-0")}
                                         />
                                     </CommandItem>
                                 ))}
@@ -82,23 +83,19 @@ const GroupMultiSelectCombobox: FC<ComboboxProps> = ({ state, dispatch }) => {
                     </Command>
                 </PopoverContent>
             </Popover>
-            <p className="text-xs text-gray-600 mt-1 ml-1">
-                Filter datasets by selecting groups.
-            </p>
-            {
-                state.groups.length > 0 && (
-                    <p className="text-xs text-blue-500 mb-1 ml-1">
-                        <a href="#" onClick={handleClearAll}>Clear filters</a>
-                    </p>
-                )
-            }
+            <p className="text-xs text-gray-600 mt-1 ml-1">Filter datasets by selecting {label.toLowerCase()}.</p>
+            {selectedItems.length > 0 && (
+                <p className="text-xs text-blue-500 mb-1 ml-1">
+                    <a href="#" onClick={handleClearAll}>Clear filters</a>
+                </p>
+            )}
 
-            {/* Display selected groups as badges with a maximum height and scrollable area */}
-            <ScrollArea className="max-h-32 overflow-y-auto"> {/* Set max height and enable vertical scrolling */}
+            {/* Display selected items as badges with a maximum height and scrollable area */}
+            <ScrollArea className="max-h-32 overflow-y-auto">
                 <div className="flex flex-wrap items-center gap-1 mb-2 mt-2">
-                    {state.groups.length > 0 && (
-                        state.groups.map((value: string) => {
-                            const option = state?.filters?.groups.find((option) => option.value === value);
+                    {selectedItems.length > 0 &&
+                        selectedItems.map((value: string) => {
+                            const option = items.find((option) => option.value === value);
                             return option ? (
                                 <Badge key={option.value} variant="secondary" className="flex items-center truncate">
                                     {option.label}
@@ -108,19 +105,18 @@ const GroupMultiSelectCombobox: FC<ComboboxProps> = ({ state, dispatch }) => {
                                         className="ml-1 p-0"
                                         onClick={(e) => {
                                             e.stopPropagation();
-                                            handleRemoveGroup(option.value);
+                                            handleRemoveItem(option.value);
                                         }}
                                     >
                                         <Cross2Icon className="h-3 w-3" />
                                     </Button>
                                 </Badge>
                             ) : null;
-                        })
-                    )}
+                        })}
                 </div>
             </ScrollArea>
         </>
     );
 };
 
-export default GroupMultiSelectCombobox;
+export default MultiSelectCombobox;

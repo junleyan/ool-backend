@@ -9,6 +9,7 @@ import { data } from "@/utils/data";  // From preprod
 export interface SelectOption {
     label: string;
     value: string;
+    count: number;
 }
 
 export interface State {
