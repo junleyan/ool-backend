@@ -8,6 +8,7 @@ import { data } from "@/utils/data";
 export interface SelectOption {
     label: string;
     value: string;
+    count: number;
 }
 
 export interface State {

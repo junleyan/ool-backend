@@ -2,10 +2,9 @@ import { Dispatch } from "react";
 import Image from "next/image";
 import OrganizationCombobox from "./OrganizationCombobox";
 import { ScrollArea } from "./ui/scroll-area";
-import TagMultiSelectCombobox from "./TagMultiSelectCombobox";
-import GroupMultiSelectCombobox from "./GroupMultiSelectCombobox";
 import { State } from "./App";
 import { Separator } from "./ui/separator";
+import MultiSelectCombobox from "./MultiSelectCombobox";
 
 interface SidebarProps {
     state: State;
@@ -29,11 +28,29 @@ const Sidebar: React.FC<SidebarProps> = ({ state, dispatch }) => {
             </div>
             <Separator className="mt-5 mb-3" />
             <ScrollArea>
+                {/* Organization Combobox */}
                 <OrganizationCombobox state={state} dispatch={dispatch} />
+
                 <Separator className="my-3" />
-                <GroupMultiSelectCombobox state={state} dispatch={dispatch} />
+
+                {/* Group Combobox */}
+                <MultiSelectCombobox
+                    label="Groups"
+                    selectedItems={state.groups}
+                    items={state.filters.groups}
+                    dispatch={dispatch}
+                    stateKey="groups"
+                />
                 <Separator className="my-3" />
-                <TagMultiSelectCombobox state={state} dispatch={dispatch} />
+
+                {/* Tag Combobox */}
+                <MultiSelectCombobox
+                    label="Tags"
+                    selectedItems={state.tags}
+                    items={state.filters.tags}
+                    dispatch={dispatch}
+                    stateKey="tags"
+                />
             </ScrollArea>
         </div>
     );

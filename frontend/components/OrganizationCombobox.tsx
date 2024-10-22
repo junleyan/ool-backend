@@ -1,5 +1,4 @@
 import { CaretSortIcon, CheckIcon } from "@radix-ui/react-icons";
-import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -49,15 +48,16 @@ const OrganizationCombobox: FC<ComboboxProps> = ({ state, dispatch }) => {
                                         key={option.value}
                                         value={option.value}
                                         onSelect={() => handleSelect(option.value)}
-                                        className="px-3 py-2 hover:bg-gray-100"
+                                        className="px-3 py-2 hover:bg-gray-100 flex justify-between items-center"
                                     >
-                                        {option.label}
-                                        <CheckIcon
-                                            className={cn(
-                                                "ml-auto h-4 w-4",
-                                                state.organization === option.value ? "opacity-100" : "opacity-0"
-                                            )}
-                                        />
+                                        <span className="">{option.label}</span>
+                                        {state.organization === option.value ? (
+                                            <CheckIcon className="ml-2 w-5 text-gray-900" />
+                                        ) : (
+                                            <span className="ml-2 bg-gray-300 text-gray-900 text-xs font-semibold px-2 py-0.5 rounded-full">
+                                                {option.count}
+                                            </span>
+                                        )}
                                     </CommandItem>
                                 ))}
                             </CommandGroup>
