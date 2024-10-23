@@ -2,12 +2,14 @@
 
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup} from "@/components/ui/resizable";
 import Sidebar from "./Sidebar";
-import { useEffect, useReducer } from "react";
-import { data } from "@/utils/data";
+import DatasetTable from "./DatasetTable";  // From datasets
+import { useEffect, useReducer } from "react";  // From preprod
+import { data } from "@/utils/data";  // From preprod
 
 export interface SelectOption {
     label: string;
     value: string;
+    count: number;
 }
 
 export interface State {
@@ -69,7 +71,7 @@ const App = () => {
                 <ResizableHandle withHandle />
                 <ResizablePanel defaultSize={80}>
                     <div className="flex h-full items-center justify-center p-6">
-                        <span className="font-semibold">Content</span>
+                        <DatasetTable organization={state.organization} groups={state.groups} tags={state.tags} />
                     </div>
                 </ResizablePanel>
             </ResizablePanelGroup>
