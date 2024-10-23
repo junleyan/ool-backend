@@ -3,12 +3,17 @@
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup} from "@/components/ui/resizable";
 import Sidebar from "./Sidebar";
 import { useEffect, useReducer } from "react";
-import { data } from "@/utils/data";
+import { data, SelectOption } from "@/utils/data";
+import Interface from "./Interface";
 
-export interface SelectOption {
-    label: string;
-    value: string;
-    count: number;
+export interface Tag {
+    display_name: string;
+}
+
+interface Datasets {
+    title: string;
+    notes: string;
+    tags: Tag[];
 }
 
 export interface State {
@@ -23,6 +28,9 @@ export interface State {
     organization: string | null;
     groups: string[];
     tags: string[];
+    datasets: Datasets[];
+    visualize: boolean;
+    isLoadingFilters: boolean;
 }
 
 function reducer(state: State, action: { type: string; payload: unknown }): State {
@@ -48,6 +56,9 @@ const App = () => {
         organization: null,
         groups: [],
         tags: [],
+        datasets: [],
+        visualize: false,
+        isLoadingFilters: false
     };
 
     const [state, dispatch] = useReducer(reducer, INITIAL_STATE);
@@ -56,7 +67,20 @@ const App = () => {
         axiosHandler();
     }, []);
 
+    useEffect(() => {
+        if (state.isLoadingFilters) {
+            updateFilters();
+        }
+    }, [state.isLoadingFilters])
+
     const axiosHandler = async () => dispatch({ type: "filters", payload: await data.getFilters() });
+
+    const updateFilters = async () => {
+        const DATA = await data.getDataset(state.organization, state.groups, state.tags);
+        dispatch({ type: "filters", payload: DATA.filters });
+        dispatch({ type: "datasets", payload: DATA.results });
+        dispatch({ type: "isLoadingFilters", payload: false });
+    }
 
     return (
         <div className="w-screen h-screen">
@@ -69,9 +93,7 @@ const App = () => {
                 </ResizablePanel>
                 <ResizableHandle withHandle />
                 <ResizablePanel defaultSize={80}>
-                    <div className="flex h-full items-center justify-center p-6">
-                        <span className="font-semibold">Content</span>
-                    </div>
+                    <Interface state={state} dispatch={dispatch} />
                 </ResizablePanel>
             </ResizablePanelGroup>
         </div>

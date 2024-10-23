@@ -12,15 +12,17 @@ interface MultiSelectComboboxProps {
     selectedItems: string[];
     items: { label: string; value: string }[];
     dispatch: Dispatch<{ type: string; payload: unknown }>;
-    stateKey: string; // Either 'groups', 'tags', or another key for selected items
+    stateKey: string;
+    isLoading: boolean;
 }
 
 const MultiSelectCombobox: FC<MultiSelectComboboxProps> = ({
     label,
     selectedItems,
-    items,
+    items = [],
     dispatch,
     stateKey,
+    isLoading
 }) => {
     const handleSelect = (currentValue: string) => {
         const isSelected = selectedItems.includes(currentValue);
@@ -31,15 +33,18 @@ const MultiSelectCombobox: FC<MultiSelectComboboxProps> = ({
             newSelected = [...selectedItems, currentValue];
         }
         dispatch({ type: stateKey, payload: newSelected });
+        dispatch({ type: 'isLoadingFilters', payload: true });
     };
 
     const handleRemoveItem = (value: string) => {
         const newSelected = selectedItems.filter((item: string) => item !== value);
         dispatch({ type: stateKey, payload: newSelected });
+        dispatch({ type: 'isLoadingFilters', payload: true });
     };
 
     const handleClearAll = () => {
         dispatch({ type: stateKey, payload: [] });
+        dispatch({ type: 'isLoadingFilters', payload: true });
     };
 
     return (
@@ -53,7 +58,7 @@ const MultiSelectCombobox: FC<MultiSelectComboboxProps> = ({
                         variant="outline"
                         role="combobox"
                         className="w-60 justify-between border border-gray-300 rounded-md shadow-sm bg-white text-gray-900 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 truncate"
-                        disabled={items.length === 0}
+                        disabled={items.length === 0 || isLoading}
                     >
                         <span>{selectedItems.length > 0 ? `Edit ${label.toLowerCase()}...` : `Select ${label.toLowerCase()}...`}</span>
                         <CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />

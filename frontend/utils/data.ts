@@ -1,5 +1,25 @@
 import axios from "axios";
 
+export interface SelectOption {
+    label: string;
+    value: string;
+    count: number;
+}
+
+interface DatasetFilters {
+    organizations: SelectOption[];
+    groups: SelectOption[];
+    tags: SelectOption[];
+    licenses: SelectOption[];
+    formats: SelectOption[];
+}
+
+interface DatasetResult {
+    count: number;
+    results: object[];
+    filters: DatasetFilters;
+}
+
 export const data = {
     async getFilters() {
         try {
@@ -9,31 +29,28 @@ export const data = {
             console.error('Error fetching filters:', error);
         }
     },
-    
-    async getOrganizationOptions() {
-        try {
-            const response = await axios.get('https://ottl.vercel.app/api/get/organizations');
-            return response.data.data;
-        } catch (error) {
-            console.error('Error fetching organizations:', error);
-        }
-    },
 
-    async getGroupOptions() {
+    async getDataset(
+        organization?: string | null,
+        groups?: string[],
+        tags?: string[],
+        formats?: string[],
+        licenses?: string[]
+    ): Promise<DatasetResult> {
         try {
-            const response = await axios.get('https://ottl.vercel.app/api/get/groups');
-            return response.data.data;
-        } catch (error) {
-            console.error('Error fetching groups:', error);
-        }
-    },
+            const queryParams = new URLSearchParams();
 
-    async getTagOptions() {
-        try {
-            const response = await axios.get('https://ottl.vercel.app/api/get/tags');
-            return response.data.data;
+            if (organization) queryParams.append('organization', organization);
+            if (groups && groups.length > 0) queryParams.append('groups', groups.join(','));
+            if (tags && tags.length > 0) queryParams.append('tags', tags.join(','));
+            if (formats && formats.length > 0) queryParams.append('formats', formats.join(','));
+            if (licenses && licenses.length > 0) queryParams.append('licenses', licenses.join(','));
+
+            const response = await axios.get(`https://ottl.vercel.app/api/get/dataset?${queryParams.toString()}`);
+            return response.data.data as DatasetResult;
         } catch (error) {
-            console.error('Error fetching tags:', error);
+            console.error('Error fetching datasets:', error);
+            throw error;
         }
     }
 };
