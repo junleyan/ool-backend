@@ -19,7 +19,12 @@ const Interface: React.FC<InterfaceProps> = ({ state, dispatch }) => {
             </div>
 
             <ScrollArea className="w-full">
-                <DatasetsView state={state} dispatch={dispatch} />
+                {
+                    state.visualize ?
+                        <div>Visualization Here</div>
+                        :
+                        <DatasetsView state={state} dispatch={dispatch} />
+                }
             </ScrollArea>
         </div>
 
