@@ -11,6 +11,7 @@ export interface Tag {
 }
 
 interface Datasets {
+    state: string;
     title: string;
     notes: string;
     tags: Tag[];
@@ -29,6 +30,7 @@ export interface State {
     groups: string[];
     tags: string[];
     datasets: Datasets[];
+    sortBy: string;
     visualize: boolean;
     isLoadingFilters: boolean;
 }
@@ -57,6 +59,7 @@ const App = () => {
         groups: [],
         tags: [],
         datasets: [],
+        sortBy: "relevance",
         visualize: false,
         isLoadingFilters: false
     };

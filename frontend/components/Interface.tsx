@@ -4,6 +4,7 @@ import { State } from "./App";
 import TabSwitch from "./TabSwitch";
 import DatasetsView from "./DatasetsView";
 import { Separator } from "./ui/separator";
+import SortBy from "./SortBy";
 
 interface InterfaceProps {
     state: State;
@@ -16,6 +17,10 @@ const Interface: React.FC<InterfaceProps> = ({ state, dispatch }) => {
         <div id="demotest" className="flex h-full w-full flex-col items-center justify-start p-6">
             <div className="flex items-center mb-5">
                 <TabSwitch state={state} dispatch={dispatch} />
+            </div>
+
+            <div className="flex items-center mb-3">
+                <SortBy state={state} dispatch={dispatch}/>
             </div>
 
             <ScrollArea className="w-full">
