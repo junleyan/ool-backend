@@ -40,7 +40,7 @@ const Combobox: FC<ComboboxProps> = ({
 
     return (
         <>
-            <p className="text-sm font-bold text-gray-800 mb-1 ml-1">
+            <p className="text-sm font-bold mb-1 ml-1">
                 {label}
             </p>
             <Popover>
@@ -49,7 +49,7 @@ const Combobox: FC<ComboboxProps> = ({
                         id={`${stateKey}-select`}
                         variant="outline"
                         role="combobox"
-                        className="w-60 justify-between border border-gray-300 rounded-md shadow-sm bg-white text-gray-900 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 truncate"
+                        className="w-60 justify-between border rounded-md shadow-sm truncate"
                         disabled={options.length === 0 || isLoading}
                     >
                         {selectedValue ? (
@@ -60,7 +60,7 @@ const Combobox: FC<ComboboxProps> = ({
                         <CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                     </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-60 p-0 border border-gray-300 rounded-md shadow-lg">
+                <PopoverContent className="w-60 p-0 border rounded-md shadow-lg">
                     <Command>
                         <CommandInput placeholder={`Search ${label.toLowerCase()}...`} className="h-8 px-3 my-2 border-b border-gray-300" />
                         <CommandList>
@@ -71,7 +71,7 @@ const Combobox: FC<ComboboxProps> = ({
                                         key={option.value}
                                         value={option.value}
                                         onSelect={() => handleSelect(option.value)}
-                                        className="px-3 py-2 hover:bg-gray-100 flex justify-between items-center"
+                                        className="px-3 py-2 flex justify-between items-center"
                                     >
                                         <span>{option.label}</span>
                                         {selectedValue === option.value ? (
