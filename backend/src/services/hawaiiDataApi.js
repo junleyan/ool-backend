@@ -66,7 +66,11 @@ export const getFilters = async () => {
         const SUCCESS = FIRST_RESPONSE.data.success && SECOND_RESPONSE.data.success;
 
         if (SUCCESS) {
-            return getList(DATA, API_URL);
+            return {
+                count: FIRST_RESPONSE.data.result.count,
+                results: DATA,
+                filters: getList(DATA, API_URL)
+            }
         } else {
             throw new Error('Failed to fetch dataset list from Hawaii Open Data' + error.message);
         }
