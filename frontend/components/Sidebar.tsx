@@ -1,10 +1,10 @@
 import { Dispatch } from "react";
 import Image from "next/image";
-import OrganizationCombobox from "./OrganizationCombobox";
 import { ScrollArea } from "./ui/scroll-area";
 import { State } from "./App";
 import { Separator } from "./ui/separator";
 import MultiSelectCombobox from "./MultiSelectCombobox";
+import Combobox from "./Combobox";
 
 interface SidebarProps {
     state: State;
@@ -28,28 +28,36 @@ const Sidebar: React.FC<SidebarProps> = ({ state, dispatch }) => {
             </div>
             <Separator className="mt-5 mb-3" />
             <ScrollArea>
-                {/* Organization Combobox */}
-                <OrganizationCombobox state={state} dispatch={dispatch} />
+                <Combobox
+                    label="Organization"
+                    placeholder="Select organization..."
+                    selectedValue={state.organization}
+                    options={state.filters?.organizations || []}
+                    dispatch={dispatch}
+                    stateKey="organization"
+                    isLoading={state.isLoadingFilters}
+                />
 
                 <Separator className="my-3" />
 
-                {/* Group Combobox */}
                 <MultiSelectCombobox
                     label="Groups"
                     selectedItems={state.groups}
-                    items={state.filters.groups}
+                    items={state.filters?.groups || []}
                     dispatch={dispatch}
                     stateKey="groups"
+                    isLoading={state.isLoadingFilters}
                 />
+
                 <Separator className="my-3" />
 
-                {/* Tag Combobox */}
                 <MultiSelectCombobox
                     label="Tags"
                     selectedItems={state.tags}
-                    items={state.filters.tags}
+                    items={state.filters?.tags || []}
                     dispatch={dispatch}
                     stateKey="tags"
+                    isLoading={state.isLoadingFilters}
                 />
             </ScrollArea>
         </div>
