@@ -16,9 +16,16 @@ interface DatasetProps {
     tags: Tag[];
 }
 
-const datasetArr = (sortBy: string, datasets: DatasetProps[]) => {
+const datasetArr = (sortBy: string, datasets: DatasetProps[], searchQuery: string) => {
     return datasets
         .filter(dataset => dataset.state === 'active')
+        .filter(dataset => {
+            return (
+                dataset.title.toLowerCase().slice(0, searchQuery.length) === searchQuery.toLowerCase()
+                || dataset.title.toLowerCase().includes(searchQuery.toLowerCase())
+                || dataset.notes.toLowerCase().includes(searchQuery.toLowerCase())
+            );
+        }) 
         .sort((a, b) => {
             switch (sortBy) {
                 case 'name-asc':
@@ -26,6 +33,7 @@ const datasetArr = (sortBy: string, datasets: DatasetProps[]) => {
                 case 'name-desc':
                     return b.title.localeCompare(a.title);
                 case 'last-modified':
+                    return 0;
                 case 'popularity':
                     return 0;
                 default:
@@ -75,7 +83,7 @@ const DatasetsView: React.FC<DatasetsViewProps> = ({ state, dispatch }) => {
             className="flex -ml-4 w-auto"
             columnClassName="pl-4 bg-clip-padding"
         >
-            {datasetArr(state.sortBy, state.datasets)}
+            {datasetArr(state.sortBy, state.datasets, state.searchQuery)}
         </Masonry>
     );
 };
