@@ -59,9 +59,12 @@ const Dataset: React.FC<DatasetProps> = ({ title, notes, tags, resources }) => {
         <Card className="w-full mb-4 shadow-md transition-transform transform hover:-translate-y-1 hover:shadow-lg hover:bg-gray-50">
             <CardHeader>
                 <CardTitle>{title}</CardTitle>
-                <CardDescription className="break-words whitespace-normal">
-                    <div dangerouslySetInnerHTML={{ __html: notes }} />
-                </CardDescription>
+                {
+                    notes.length > 0 && 
+                        <CardDescription className="break-words whitespace-normal">
+                            <div dangerouslySetInnerHTML={{ __html: notes }} />
+                        </CardDescription>
+                }
             </CardHeader>
             {
                 resources.length > 0 &&
