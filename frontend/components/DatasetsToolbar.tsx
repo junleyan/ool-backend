@@ -1,4 +1,4 @@
-import React, { Dispatch } from 'react';
+import React, { Dispatch, useEffect, useState } from 'react';
 import { State } from './App';
 import { Input } from './ui/input';
 import { Search } from 'lucide-react';
@@ -10,13 +10,23 @@ interface DatasetsToolbarProps {
 }
 
 const DatasetsToolbar: React.FC<DatasetsToolbarProps> = ({ state, dispatch }) => {
+    const [searchQuery, setSearchQuery] = useState(state.searchQuery || '');
+
     const handleSortChange = (value: string) => {
         dispatch({ type: 'sortBy', payload: value });
     };
 
     const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        dispatch({ type: 'searchQuery', payload: event.target.value });
-    }
+        setSearchQuery(event.target.value);
+    };
+
+    useEffect(() => {
+        const debounceTimeout = setTimeout(() => {
+            dispatch({ type: 'searchQuery', payload: searchQuery });
+        }, 750);
+
+        return () => clearTimeout(debounceTimeout);
+    }, [searchQuery, dispatch]);
 
     return (
         <div className="relative w-full max-w-xl mx-auto flex items-center space-x-4">
@@ -29,8 +39,10 @@ const DatasetsToolbar: React.FC<DatasetsToolbarProps> = ({ state, dispatch }) =>
                     type="text" 
                     placeholder="Search" 
                     className="pl-9 w-full" 
+                    value={searchQuery} 
                     onChange={handleSearchChange} 
-                />            </div>
+                />
+            </div>
             <div className="w-2/6">
                 <Select value={state.sortBy} onValueChange={handleSortChange}>
                     <SelectTrigger className="w-full px-4 py-2 rounded-md">

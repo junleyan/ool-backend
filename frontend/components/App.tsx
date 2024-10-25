@@ -10,11 +10,17 @@ export interface Tag {
     display_name: string;
 }
 
+export interface Resource {
+    format: string;
+    state: string;
+}
+
 interface Datasets {
     state: string;
     title: string;
     notes: string;
     tags: Tag[];
+    resources: Resource[];
 }
 
 export interface State {
