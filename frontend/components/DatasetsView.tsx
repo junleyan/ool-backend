@@ -18,7 +18,7 @@ interface DatasetProps {
     tags: Tag[];
 }
 
-const datasetArr = (sortBy: string, datasets: DatasetProps[], searchQuery: string) => {
+const datasetArr = ({ sortBy, datasets, searchQuery, showTags, showFormats }: {sortBy: string, datasets: DatasetProps[], searchQuery: string, showTags: boolean, showFormats: boolean}) => {
     return datasets
         .filter(dataset => dataset.state === 'active')
         .filter(dataset => {
@@ -47,9 +47,9 @@ const datasetArr = (sortBy: string, datasets: DatasetProps[], searchQuery: strin
                 key={index}
                 title={dataset.title}
                 notes={dataset.notes}
-                tags={dataset.tags}
+                tags={showTags ? dataset.tags : []}
                 state={dataset.state}
-                resources={dataset.resources}
+                resources={showFormats ? dataset.resources : []}
             />
         ));
 };
@@ -105,7 +105,7 @@ const DatasetsView: React.FC<DatasetsViewProps> = ({ state, dispatch }) => {
             className="flex -ml-4 w-auto mt-2"
             columnClassName="pl-4 bg-clip-padding"
         >
-            {datasetArr(state.sortBy, state.datasets, state.searchQuery)}
+            {datasetArr(state)}
         </Masonry>
     );
 };

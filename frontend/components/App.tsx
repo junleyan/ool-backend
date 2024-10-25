@@ -38,6 +38,8 @@ export interface State {
     datasets: Datasets[];
     sortBy: string;
     searchQuery: string;
+    showTags: boolean;
+    showFormats: boolean;
     visualize: boolean;
     isLoadingFilters: boolean;
 }
@@ -68,6 +70,8 @@ const App = () => {
         datasets: [],
         sortBy: "relevance",
         searchQuery: "",
+        showTags: true,
+        showFormats: true,
         visualize: false,
         isLoadingFilters: false
     };
