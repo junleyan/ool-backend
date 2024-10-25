@@ -88,7 +88,11 @@ const App = () => {
         }
     }, [state.isLoadingFilters])
 
-    const axiosHandler = async () => dispatch({ type: "filters", payload: await data.getFilters() });
+    const axiosHandler = async () => {
+        const DATA = await data.getFilters();
+        dispatch({ type: "filters", payload: DATA.filters });
+        dispatch({ type: "datasets", payload: DATA.results });
+    };
 
     const updateFilters = async () => {
         const DATA = await data.getDataset(state.organization, state.groups, state.tags);

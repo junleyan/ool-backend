@@ -21,12 +21,13 @@ interface DatasetResult {
 }
 
 export const data = {
-    async getFilters() {
+    async getFilters(): Promise<DatasetResult> {
         try {
             const response = await axios.get('https://ottl.vercel.app/api/get/filters');
-            return response.data.data;
+            return response.data.data as DatasetResult;
         } catch (error) {
             console.error('Error fetching filters:', error);
+            throw error;
         }
     },
 
