@@ -12,15 +12,17 @@ interface MultiSelectComboboxProps {
     selectedItems: string[];
     items: { label: string; value: string }[];
     dispatch: Dispatch<{ type: string; payload: unknown }>;
-    stateKey: string; // Either 'groups', 'tags', or another key for selected items
+    stateKey: string;
+    isLoading: boolean;
 }
 
 const MultiSelectCombobox: FC<MultiSelectComboboxProps> = ({
     label,
     selectedItems,
-    items,
+    items = [],
     dispatch,
     stateKey,
+    isLoading
 }) => {
     const handleSelect = (currentValue: string) => {
         const isSelected = selectedItems.includes(currentValue);
@@ -31,20 +33,23 @@ const MultiSelectCombobox: FC<MultiSelectComboboxProps> = ({
             newSelected = [...selectedItems, currentValue];
         }
         dispatch({ type: stateKey, payload: newSelected });
+        dispatch({ type: 'isLoadingFilters', payload: true });
     };
 
     const handleRemoveItem = (value: string) => {
         const newSelected = selectedItems.filter((item: string) => item !== value);
         dispatch({ type: stateKey, payload: newSelected });
+        dispatch({ type: 'isLoadingFilters', payload: true });
     };
 
     const handleClearAll = () => {
         dispatch({ type: stateKey, payload: [] });
+        dispatch({ type: 'isLoadingFilters', payload: true });
     };
 
     return (
         <>
-            <p className="text-sm font-bold text-gray-800 mt-3 mb-1 ml-1">{label}</p>
+            <p className="text-sm font-bold mt-3 mb-1 ml-1">{label}</p>
 
             {/* Dropdown to select items */}
             <Popover>
@@ -52,16 +57,16 @@ const MultiSelectCombobox: FC<MultiSelectComboboxProps> = ({
                     <Button
                         variant="outline"
                         role="combobox"
-                        className="w-60 justify-between border border-gray-300 rounded-md shadow-sm bg-white text-gray-900 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 truncate"
-                        disabled={items.length === 0}
+                        className="w-60 justify-between border rounded-md shadow-sm truncate"
+                        disabled={items.length === 0 || isLoading}
                     >
                         <span>{selectedItems.length > 0 ? `Edit ${label.toLowerCase()}...` : `Select ${label.toLowerCase()}...`}</span>
                         <CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                     </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-60 p-0 border border-gray-300 rounded-md shadow-lg">
+                <PopoverContent className="w-60 p-0 border rounded-md shadow-lg">
                     <Command>
-                        <CommandInput placeholder={`Search ${label.toLowerCase()}...`} className="h-8 px-3 my-2 border-b border-gray-300" />
+                        <CommandInput placeholder={`Search ${label.toLowerCase()}...`} className="h-8 px-3 my-2 border-b" />
                         <CommandList>
                             <CommandEmpty>No {label.toLowerCase()} found. Please try a different keyword.</CommandEmpty>
                             <CommandGroup>
@@ -70,7 +75,7 @@ const MultiSelectCombobox: FC<MultiSelectComboboxProps> = ({
                                         key={option.value}
                                         value={option.value}
                                         onSelect={() => handleSelect(option.value)}
-                                        className="px-3 py-2 hover:bg-gray-100"
+                                        className="px-3 py-2"
                                     >
                                         {option.label}
                                         <CheckIcon
@@ -86,7 +91,7 @@ const MultiSelectCombobox: FC<MultiSelectComboboxProps> = ({
             <p className="text-xs text-gray-600 mt-1 ml-1">Filter datasets by selecting {label.toLowerCase()}.</p>
             {selectedItems.length > 0 && (
                 <p className="text-xs text-blue-500 mb-1 ml-1">
-                    <a href="#" onClick={handleClearAll}>Clear filters</a>
+                    <a onClick={handleClearAll}>Clear filters</a>
                 </p>
             )}
 
