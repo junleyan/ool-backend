@@ -1,38 +1,52 @@
 import axios from 'axios'
-import { TAG_LIST } from '../utils/tagList.js';
+import { getList } from '../utils/getList.js';
+import { error } from 'console';
 
-const API_URL = 'https://opendata.hawaii.gov/api/3'
+const API_URL = 'https://opendata.hawaii.gov';
 
 export const getFilteredDataset = async (organization, groups, tags, formats, licenses) => {
     try {
-        let fqQuery = organization && `organization:"${organization}"`;
+        let filters = [];
 
-        if (groups) {
+        if (organization) {
+            filters.push(`organization:"${organization}"`);
+        }
+        if (groups && groups.length > 0) {
             const GROUPS_QUERY = groups.map(group => `groups:"${group}"`).join('+AND+');
-            fqQuery += `+AND+${GROUPS_QUERY}`;
+            filters.push(GROUPS_QUERY);
         }
-        if (tags) {
+        if (tags && tags.length > 0) {
             const TAGS_QUERY = tags.map(tag => `tags:"${tag}"`).join('+AND+');
-            fqQuery += `+AND+${TAGS_QUERY}`;
+            filters.push(TAGS_QUERY);
         }
-        if (formats) {
+        if (formats && formats.length > 0) {
             const FORMATS_QUERY = formats.map(format => `res_format:"${format}"`).join('+AND+');
-            fqQuery += `+AND+${FORMATS_QUERY}`;
+            filters.push(FORMATS_QUERY);
         }
-        if (licenses) {
+        if (licenses && licenses.length > 0) {
             const LICENSES_QUERY = licenses.map(license => `license_id:"${license}"`).join('+AND+');
-            fqQuery += `+AND+${LICENSES_QUERY}`;
+            filters.push(LICENSES_QUERY);
         }
 
-        const RESPONSE = await axios.get(`${API_URL}/action/package_search?fq=${fqQuery}`);
-        const DATA = RESPONSE.data;
-        const SUCCESS = DATA.success;
+        let fqQuery = filters.length > 0 ? filters.join('+AND+') : '';
+        const apiUrl = fqQuery
+            ? `${API_URL}/api/3/action/package_search?fq=${fqQuery}&rows=999`
+            : `${API_URL}/api/3/action/package_search?rows=999`;
+
+        const [FIRST_RESPONSE, SECOND_RESPONSE] = await Promise.all([
+            axios.get(apiUrl),
+            axios.get(apiUrl + '&start=1000')
+        ]);
+
+        const DATA = [...FIRST_RESPONSE.data.result.results, ...SECOND_RESPONSE.data.result.results];
+        const SUCCESS = FIRST_RESPONSE.data.success && SECOND_RESPONSE.data.success;
         
         if (SUCCESS) {
             return {
-                count: DATA.result.count,
-                results: DATA.result.results
-            }
+                count: FIRST_RESPONSE.data.result.count,
+                results: DATA,
+                filters: getList(DATA, API_URL)
+            };
         } else {
             throw new Error('Failed to fetch filtered dataset from Hawaii Open Data');
         }
@@ -41,68 +55,26 @@ export const getFilteredDataset = async (organization, groups, tags, formats, li
     }
 };
 
-export const getOrganizationList = async () => {
+export const getFilters = async () => {
     try {
-        const RESPONSE = await axios.get(`${API_URL}/action/organization_list`);
-        const DATA = RESPONSE.data;
-        const SUCCESS = DATA.success;
-        
-        if (SUCCESS) {
-            const ORGANIZATION_LIST = await Promise.all(
-                DATA.result.map(async (organization) => {
-                    const ORGANIZATION_RESPONSE = await axios.get(`${API_URL}/action/organization_show?id=${organization}`);
-                    return ORGANIZATION_RESPONSE.data.result;
-                })
-            );
-            return ORGANIZATION_LIST
-                .filter(({ package_count }) => package_count > 0)
-                .sort((organizationA, organizationB) => organizationB.package_count - organizationA.package_count)
-                .map(({ display_name, name, package_count }) => ({
-                    display_name,
-                    name,
-                    count: package_count
-                }));
-        } else {
-            throw new Error('Failed to fetch organization list from Hawaii Open Data');
-        }
-    } catch {
-        throw new Error('Error fetching organization list from Hawaii Open Data: ' + error.message);
-    }
-};
+        const [FIRST_RESPONSE, SECOND_RESPONSE] = await Promise.all([
+            axios.get(`${API_URL}/api/3/action/package_search?rows=999`),
+            axios.get(`${API_URL}/api/3/action/package_search?rows=999&start=1000`)
+        ]);
 
-export const getGroupList = async () => {
-    try {
-        const RESPONSE = await axios.get(`${API_URL}/action/group_list`);
-        const DATA = RESPONSE.data;
-        const SUCCESS = DATA.success;
-        
-        if (SUCCESS) {
-            const GROUP_LIST = await Promise.all(
-                DATA.result.map(async (group) => {
-                    const GROUP_RESPONSE = await axios.get(`${API_URL}/action/group_show?id=${group}`);
-                    return GROUP_RESPONSE.data.result;
-                })
-            );
-            return GROUP_LIST
-                .filter(({ package_count }) => package_count > 0)
-                .sort((groupA, groupB) => groupB.package_count - groupA.package_count)
-                .map(({ display_name, name, package_count }) => ({
-                    display_name,
-                    name,
-                    count: package_count
-                }));
-        } else {
-            throw new Error('Failed to fetch group list from Hawaii Open Data');
-        }
-    } catch {
-        throw new Error('Error fetching group list from Hawaii Open Data: ' + error.message);
-    }
-};
+        const DATA = [...FIRST_RESPONSE.data.result.results, ...SECOND_RESPONSE.data.result.results];
+        const SUCCESS = FIRST_RESPONSE.data.success && SECOND_RESPONSE.data.success;
 
-export const getTagList = async () => {
-    try {
-        return TAG_LIST;
-    } catch {
-        throw new Error('Error fetching tag list from Hawaii Open Data: ' + error.message);
+        if (SUCCESS) {
+            return {
+                count: FIRST_RESPONSE.data.result.count,
+                results: DATA,
+                filters: getList(DATA, API_URL)
+            }
+        } else {
+            throw new Error('Failed to fetch dataset list from Hawaii Open Data' + error.message);
+        }
+    } catch (error) {
+        throw new Error('Error fetching dataset list from Hawaii Open Data: ' + error.message);
     }
 };
