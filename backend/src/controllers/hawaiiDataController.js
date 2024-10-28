@@ -28,10 +28,10 @@ export const handleGetFilters = async (req, res) => {
 };
 
 export const handleGetCSV = async (req, res) => {
-    const { url } = req.query;
+    const { id } = req.query;
     console.log(req.query)
     try {
-        sendJsonResponse(res, HttpStatusCode.Ok, '', await getCSV(url));
+        sendJsonResponse(res, HttpStatusCode.Ok, '', await getCSV(id));
     } catch (error) {
         sendJsonResponse(res, HttpStatusCode.BadRequest, error.message);
     }
