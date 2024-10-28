@@ -1,4 +1,5 @@
-import axios from 'axios'
+import axios from 'axios';
+import csv from 'csv-parser';
 import { getList } from '../utils/getList.js';
 import { error } from 'console';
 
@@ -76,5 +77,22 @@ export const getFilters = async () => {
         }
     } catch (error) {
         throw new Error('Error fetching dataset list from Hawaii Open Data: ' + error.message);
+    }
+};
+
+export const getCSV = async (url) => {
+    try {
+        const RESPONSE = await axios.get(url, { responseType: 'stream' });
+
+        return new Promise((resolve, reject) => {
+            const RESULTS = [];
+            RESPONSE.data
+                .pipe(csv())
+                .on('data', (data) => RESULTS.push(data))
+                .on('end', () => resolve(RESULTS))
+                .on('error', (err) => reject(err));
+        });
+    } catch (error) {
+        throw new Error('Error fetching CSV data from Hawaii Open Data: ' + error.message);
     }
 };
