@@ -28,10 +28,9 @@ export const handleGetFilters = async (req, res) => {
 };
 
 export const handleGetCSV = async (req, res) => {
-    const { id } = req.query;
-    console.log(req.query)
+    const { name } = req.query;
     try {
-        sendJsonResponse(res, HttpStatusCode.Ok, '', await getCSV(id));
+        sendJsonResponse(res, HttpStatusCode.Ok, '', await getCSV(name));
     } catch (error) {
         sendJsonResponse(res, HttpStatusCode.BadRequest, error.message);
     }
