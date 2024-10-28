@@ -80,10 +80,11 @@ export const getFilters = async () => {
     }
 };
 
-export const getCSV = async (id) => {
+export const getCSV = async (dataset_name) => {
     try {
-        let RESPONSE = await axios.get(`${API_URL}/api/3/action/package_search?fq=id:${id}`);
-        const URL = RESPONSE.data.result.results[0].resources.filter(({ format }) => format === 'CSV')[0].url;
+        let RESPONSE = await axios.get(`${API_URL}/api/3/action/package_search?fq=name:${dataset_name}`);
+        const DATASET = RESPONSE.data.result.results.filter(({ name }) => name === dataset_name)[0];
+        const URL = DATASET.resources.filter(({ format }) => format === 'CSV')[0].url;
         RESPONSE = await axios.get(URL, { responseType: 'stream' });
 
         return new Promise((resolve, reject) => {
