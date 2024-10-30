@@ -17,6 +17,7 @@ export interface Resource {
 
 interface Datasets {
     state: string;
+    name: string;
     title: string;
     notes: string;
     tags: Tag[];
@@ -36,8 +37,13 @@ export interface State {
     groups: string[];
     tags: string[];
     datasets: Datasets[];
+    csv: {[key: string]: string}[];
     sortBy: string;
     searchQuery: string;
+    selectedDataset: {
+        name: string | null,
+        title: string | null
+    };
     showTags: boolean;
     showFormats: boolean;
     visualize: boolean;
@@ -68,8 +74,13 @@ const App = () => {
         groups: [],
         tags: [],
         datasets: [],
+        csv: [],
         sortBy: "relevance",
         searchQuery: "",
+        selectedDataset: {
+            name: null,
+            title: null
+        },
         showTags: true,
         showFormats: true,
         visualize: false,
@@ -88,6 +99,12 @@ const App = () => {
         }
     }, [state.isLoadingFilters])
 
+    useEffect(() => {
+        if (state.selectedDataset.name) {
+            fetchCSV(state.selectedDataset.name);
+        }
+    }, [state.selectedDataset.name])
+
     const axiosHandler = async () => {
         const DATA = await data.getFilters();
         dispatch({ type: "filters", payload: DATA.filters });
@@ -99,6 +116,11 @@ const App = () => {
         dispatch({ type: "filters", payload: DATA.filters });
         dispatch({ type: "datasets", payload: DATA.results });
         dispatch({ type: "isLoadingFilters", payload: false });
+    }
+
+    const fetchCSV = async ( name: string ) => {
+        const DATA = await data.getCSV(name);
+        dispatch({ type: "csv", payload: DATA });
     }
 
     return (

@@ -23,7 +23,7 @@ const TabSwitch: React.FC<TabSwitchProps> = ({ state, dispatch }) => {
             <Tabs value={selectedTab} className="w-[400px]" onValueChange={handleTabClick}>
                 <TabsList className="grid w-full grid-cols-2">
                     <TabsTrigger value="Datasets">Datasets</TabsTrigger>
-                    <TabsTrigger value="Visualize">Visualize</TabsTrigger>
+                    <TabsTrigger disabled={!state.selectedDataset.name} value="Visualize">Visualize</TabsTrigger>
                 </TabsList>
             </Tabs>
         </div>
