@@ -22,11 +22,11 @@ interface DatasetProps {
 const DatasetsView: React.FC<DatasetsViewProps> = ({ state, dispatch }) => {
 
     const handleDatasetSelection = (name: string, title: string) => {
-        dispatch({ type: 'selectedDataset', payload: {name: name, title: title} });
+        dispatch({ type: 'selectedDataset', payload: { name: name, title: title } });
         dispatch({ type: 'visualize', payload: true });
     }
 
-    const datasetArr = ({ sortBy, datasets, searchQuery, showTags, showFormats }: {sortBy: string, datasets: DatasetProps[], searchQuery: string, showTags: boolean, showFormats: boolean}) => {
+    const datasetArr = ({ sortBy, datasets, searchQuery, showTags, showFormats }: { sortBy: string, datasets: DatasetProps[], searchQuery: string, showTags: boolean, showFormats: boolean }) => {
         return datasets
             .filter(dataset => dataset.state === 'active')
             .filter(dataset => {
@@ -35,7 +35,7 @@ const DatasetsView: React.FC<DatasetsViewProps> = ({ state, dispatch }) => {
                     || dataset.title.toLowerCase().includes(searchQuery.toLowerCase())
                     || dataset.notes.toLowerCase().includes(searchQuery.toLowerCase())
                 );
-            }) 
+            })
             .sort((a, b) => {
                 switch (sortBy) {
                     case 'name-asc':
@@ -62,43 +62,45 @@ const DatasetsView: React.FC<DatasetsViewProps> = ({ state, dispatch }) => {
                 />
             ));
     };
-    
+
     const Dataset: React.FC<DatasetProps> = ({ title, notes, tags, resources, name }) => {
         return (
-            <Card className="w-full mb-4 shadow-md transition-transform transform cursor-pointer hover:-translate-y-1 hover:shadow-lg hover:bg-gray-50"
-                  onClick={() => handleDatasetSelection(name, title)}>
+            <Card
+                className="w-full mb-4 shadow-md transition-transform transform cursor-pointer hover:-translate-y-1 hover:shadow-lg hover:bg-gray-50"
+                onClick={() => handleDatasetSelection(name, title)}
+            >
                 <CardHeader>
                     <CardTitle>{title}</CardTitle>
                     {
-                        notes.length > 0 && 
-                            <CardDescription className="break-words whitespace-normal">
-                                <div dangerouslySetInnerHTML={{ __html: notes }} />
-                            </CardDescription>
+                        notes.length > 0 &&
+                        <CardDescription className="break-words whitespace-normal">
+                            <div dangerouslySetInnerHTML={{ __html: notes }} />
+                        </CardDescription>
                     }
                 </CardHeader>
                 {
                     resources.length > 0 &&
-                        <CardContent className="flex flex-wrap">
-                            {resources
-                                .filter(resource => resource.state === 'active')
-                                .filter(resource => FORMATS.includes(resource.format)) // !!! Change later ???
-                                .map((resource, index) => (
-                                    <Badge key={index}
-                                        className="m-0.5" 
-                                        style={{ backgroundColor: getFormatColor(resource.format) }}
-                                    >
-                                        {resource.format}
-                                    </Badge>
+                    <CardContent className="flex flex-wrap">
+                        {resources
+                            .filter(resource => resource.state === 'active')
+                            .filter(resource => FORMATS.includes(resource.format))
+                            .map((resource, index) => (
+                                <Badge key={index}
+                                    className="m-0.5"
+                                    style={{ backgroundColor: getFormatColor(resource.format) }}
+                                >
+                                    {resource.format}
+                                </Badge>
                             ))}
-                        </CardContent>
+                    </CardContent>
                 }
                 {
                     tags.length > 0 &&
-                        <CardFooter className="flex flex-wrap">
-                            {tags.map((tag, index) => (
-                                <Badge className="m-0.5" key={index}>{tag.display_name}</Badge>
-                            ))}
-                        </CardFooter>
+                    <CardFooter className="flex flex-wrap">
+                        {tags.map((tag, index) => (
+                            <Badge className="m-0.5" key={index}>{tag.display_name}</Badge>
+                        ))}
+                    </CardFooter>
                 }
             </Card>
         );

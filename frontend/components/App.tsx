@@ -48,6 +48,7 @@ export interface State {
     showFormats: boolean;
     visualize: boolean;
     isLoadingFilters: boolean;
+    isLoadingCSV: boolean;
 }
 
 function reducer(state: State, action: { type: string; payload: unknown }): State {
@@ -84,7 +85,8 @@ const App = () => {
         showTags: true,
         showFormats: true,
         visualize: false,
-        isLoadingFilters: false
+        isLoadingFilters: false,
+        isLoadingCSV: true
     };
 
     const [state, dispatch] = useReducer(reducer, INITIAL_STATE);
@@ -97,13 +99,20 @@ const App = () => {
         if (state.isLoadingFilters) {
             updateFilters();
         }
-    }, [state.isLoadingFilters])
+    }, [state.isLoadingFilters]);
 
     useEffect(() => {
         if (state.selectedDataset.name) {
+            dispatch({ type: "isLoadingCSV", payload: true });
             fetchCSV(state.selectedDataset.name);
         }
-    }, [state.selectedDataset.name])
+    }, [state.selectedDataset.name]);
+
+    useEffect(() => {
+        if (state.isLoadingFilters) {
+            dispatch({ type: "visualize", payload: false });
+        }
+    }, [state.isLoadingFilters]);
 
     const axiosHandler = async () => {
         const DATA = await data.getFilters();
@@ -121,6 +130,7 @@ const App = () => {
     const fetchCSV = async ( name: string ) => {
         const DATA = await data.getCSV(name);
         dispatch({ type: "csv", payload: DATA });
+        dispatch({ type: "isLoadingCSV", payload: false });
     }
 
     return (

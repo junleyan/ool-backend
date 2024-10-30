@@ -10,7 +10,7 @@ interface VisualizationViewProps {
 const VisualizationView: FC<VisualizationViewProps> = ({ state, dispatch }) => {
     return (
         <>
-            <CSVTable csv={state.csv} title={state.selectedDataset.title} />
+            <CSVTable csv={state.csv} title={state.selectedDataset.title} isLoadingCSV={state.isLoadingCSV} />
         </>
     );
 };
