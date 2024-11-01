@@ -100,10 +100,20 @@ const Datasets: FC<{ state: State; dispatch: Dispatch<{ type: string; payload: u
     const searchQuery = state.datasetSearchQuery.toLowerCase();
     const searchTerms = searchQuery.split(" ").filter(term => term.length > 0);
 
-    const filteredDatasets = state.datasets.filter((dataset) =>
-        dataset.title.toLowerCase().includes(searchQuery) ||
-        dataset.notes.toLowerCase().includes(searchQuery)
-    );
+    // Fetch bookmarks from localStorage
+    const getBookmarks = () => JSON.parse(localStorage.getItem("bookmarked") || "[]");
+
+    // Filter datasets based on search query and bookmark status
+    const filteredDatasets = state.datasets.filter((dataset) => {
+        const matchesSearch = dataset.title.toLowerCase().includes(searchQuery) || dataset.notes.toLowerCase().includes(searchQuery);
+        const isBookmarked = getBookmarks().includes(dataset.name);
+
+        // Show only bookmarked datasets if "showBookmarkedOnly" is enabled
+        if (state.datasetShowBookmarkOnly) {
+            return matchesSearch && isBookmarked;
+        }
+        return matchesSearch;
+    });
 
     const sortedDatasets = filteredDatasets.sort((a, b) => {
         switch (state.datasetSort) {

@@ -42,6 +42,10 @@ const DatasetToolbar = ({ state, dispatch }: DatasetToolbarProps) => {
         dispatch({ type: "datasetShowFormats", payload: !state.datasetShowFormats });
     };
 
+    const toggleShowBookmarkOnly = () => {
+        dispatch({ type: "datasetShowBookmarkOnly", payload: !state.datasetShowBookmarkOnly });
+    };
+
     const renderSortIcon = () => {
         switch (state.datasetSort) {
             case "time ascending":
@@ -110,7 +114,7 @@ const DatasetToolbar = ({ state, dispatch }: DatasetToolbarProps) => {
                         <span className="ml-1">View</span>
                     </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-40">
+                <DropdownMenuContent className="w-44">
                     <DropdownMenuLabel>Toggle View</DropdownMenuLabel>
                     <DropdownMenuSeparator />
                     <DropdownMenuCheckboxItem checked={state.datasetShowTags} onCheckedChange={toggleShowTags}>
@@ -118,6 +122,9 @@ const DatasetToolbar = ({ state, dispatch }: DatasetToolbarProps) => {
                     </DropdownMenuCheckboxItem>
                     <DropdownMenuCheckboxItem checked={state.datasetShowFormats} onCheckedChange={toggleShowFormats}>
                         Show Formats
+                    </DropdownMenuCheckboxItem>
+                    <DropdownMenuCheckboxItem checked={state.datasetShowBookmarkOnly} onCheckedChange={toggleShowBookmarkOnly}>
+                        Show Bookmarked
                     </DropdownMenuCheckboxItem>
                 </DropdownMenuContent>
             </DropdownMenu>

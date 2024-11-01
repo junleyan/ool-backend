@@ -89,7 +89,7 @@ export default function Home() {
         datasetSort: 'time descending',
         datasetShowTags: true,
         datasetShowFormats: true,
-        datasetShowBookmarkOnly: true,
+        datasetShowBookmarkOnly: false,
         selectedDataset: null
     }
 
