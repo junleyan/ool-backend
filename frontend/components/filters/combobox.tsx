@@ -1,4 +1,4 @@
-import { CheckIcon, ChevronsUpDown, X } from "lucide-react" // Add X icon
+import { CheckIcon, ChevronsUpDown, X } from "lucide-react"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Button } from "@/components/ui/button"
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"

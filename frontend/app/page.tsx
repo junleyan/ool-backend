@@ -7,6 +7,8 @@ import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/s
 import { useEffect, useReducer } from "react";
 import { data } from "../utils/data";
 import Datasets from "@/components/dataset";
+import { Input } from "@/components/ui/input";
+import { Search } from "lucide-react";
 
 export interface State {
     filters: {
@@ -133,6 +135,10 @@ export default function Home() {
                             </BreadcrumbItem>
                         </BreadcrumbList>
                     </Breadcrumb>
+                    <div className="relative ml-auto mr-3.5">
+                        <Search className="absolute left-2 top-3 h-4 w-4 text-muted-foreground" />
+                        <Input placeholder="Search" className="pl-8" />
+                    </div>
                 </header>
                 <main>
                     {
@@ -146,9 +152,7 @@ export default function Home() {
                                 ))}
                             </div>
                             :
-                            <div className="flex flex-1 flex-col w-0 min-w-full">
-                                <Datasets state={state} dispatch={dispatch}/>
-                            </div>
+                            <Datasets state={state} dispatch={dispatch} />
                     }
                 </main>
             </SidebarInset>
