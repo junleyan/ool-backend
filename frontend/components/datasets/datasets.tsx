@@ -5,11 +5,21 @@ import { Badge } from "../ui/badge";
 import { getFormatColor } from "@/utils/convert";
 import Masonry from '@mui/lab/Masonry';
 
+interface InfoCardProps {
+    dataset: Dataset;
+    showTags: boolean;
+    showFormats: boolean;
+    dispatch: React.Dispatch<{ type: string; payload: unknown }>;
+}
 
-const InfoCard: FC<{ dataset: Dataset, showTags: boolean, showFormats: boolean }> = ({ dataset, showTags, showFormats }) => {
+const InfoCard: React.FC<InfoCardProps> = ({ dataset, showTags, showFormats, dispatch }) => {
+    const handleCardHeaderClick = () => {
+        dispatch({ type: "stage", payload: "visualize" });
+        dispatch({ type: "selectedDataset", payload: dataset.name });
+    };
     return (
         <Card className="mx-2 my-4 shadow-md transform transition-transform hover:scale-101 hover:-translate-y-1 hover:shadow-lg max-w-md">
-            <CardHeader>
+            <CardHeader className="cursor-pointer" onClick={handleCardHeaderClick}>
                 <CardTitle>{dataset.title}</CardTitle>
                 {
                     dataset.notes.length > 0 &&
@@ -102,7 +112,7 @@ const Datasets: FC<{ state: State; dispatch: Dispatch<{ type: string; payload: u
                 className="flex overflow-x-hidden"
             >
                 {sortedDatasets.map((dataset, index) => (
-                    <InfoCard key={index} dataset={dataset} showTags={state.datasetShowTags} showFormats={state.datasetShowFormats} />
+                    <InfoCard key={index} dataset={dataset} showTags={state.datasetShowTags} showFormats={state.datasetShowFormats} dispatch={dispatch} />
                 ))}
             </Masonry>
         </div>

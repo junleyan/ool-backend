@@ -4,11 +4,11 @@ import AppSidebar from "@/components/app-sidebar";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
 import { Separator } from "@/components/ui/separator";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { ChangeEvent, useEffect, useReducer, useState } from "react";
+import { useEffect, useReducer } from "react";
 import { data } from "../utils/data";
 import { Skeleton } from "@/components/ui/skeleton";
 import DatasetToolbar from "@/components/datasets/dataset-toolbar";
-import Datasets from "@/components/datasets/dataset";
+import Datasets from "@/components/datasets/datasets";
 
 export interface State {
     filters: {
@@ -29,6 +29,7 @@ export interface State {
     datasetSort: string;
     datasetShowTags: boolean;
     datasetShowFormats: boolean;
+    selectedDataset: string | null;
 }
 
 export interface Dataset {
@@ -87,6 +88,7 @@ export default function Home() {
         datasetSort: 'time descending',
         datasetShowTags: true,
         datasetShowFormats: true,
+        selectedDataset: null
     }
 
     const [state, dispatch] = useReducer(reducer, INITIAL_STATE);
@@ -126,6 +128,10 @@ export default function Home() {
         dispatch({ type: "isLoadingDatasets", payload: false });
     }
 
+    const handleStageChange = (stage: string) => {
+        dispatch({ type: "stage", payload: stage });
+    }
+
     return (
         <SidebarProvider>
             <AppSidebar state={state} dispatch={dispatch} />
@@ -135,21 +141,28 @@ export default function Home() {
                     <Separator orientation="vertical" className="mr-2 h-4" />
                     <Breadcrumb>
                         <BreadcrumbList>
-                            <BreadcrumbItem className={`hidden ${state.stage === 'select' && 'text-zinc-950'} md:block`}>
-                                Select Your Dataset
+                            <BreadcrumbItem className={`hidden cursor-pointer ${state.stage !== 'select' ? 'opacity-50' : 'opacity-100'} md:block`}>
+                                <BreadcrumbLink onClick={() => handleStageChange('select')}>
+                                    Select Your Dataset
+                                </BreadcrumbLink>
                             </BreadcrumbItem>
                             {
-                                state.stage === 'visualize' &&
+                                state.selectedDataset &&
                                 <>
                                     <BreadcrumbSeparator className="hidden md:block" />
-                                    <BreadcrumbItem>
-                                        <BreadcrumbPage>Data Visualization</BreadcrumbPage>
+                                    <BreadcrumbItem className={`cursor-pointer ${state.stage !== 'visualize' ? 'opacity-50' : 'opacity-100'}`}>
+                                        <BreadcrumbLink onClick={() => handleStageChange('visualize')}>
+                                            Data Visualization
+                                        </BreadcrumbLink>
                                     </BreadcrumbItem>
                                 </>
                             }
                         </BreadcrumbList>
                     </Breadcrumb>
-                    <DatasetToolbar state={state} dispatch={dispatch} />
+                    {
+                        state.stage === 'select' &&
+                        <DatasetToolbar state={state} dispatch={dispatch} />
+                    }
                 </header>
                 <main>
                     {
@@ -163,7 +176,14 @@ export default function Home() {
                                 ))}
                             </div>
                             :
-                            <Datasets state={state} dispatch={dispatch} />
+                            <>
+                                {
+                                    state.stage === 'select' ?
+                                        <Datasets state={state} dispatch={dispatch} />
+                                        :
+                                        <>{state.selectedDataset}</>
+                                }
+                            </>
                     }
                 </main>
             </SidebarInset>
