@@ -1,20 +1,12 @@
-import { Resource, State, Tag } from "@/app/page";
+import { Dataset, State } from "@/app/page";
 import { Dispatch, FC } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
-import { Badge } from "./ui/badge";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
+import { Badge } from "../ui/badge";
 import { getFormatColor } from "@/utils/convert";
 import Masonry from '@mui/lab/Masonry';
 
-interface DatasetProps {
-    state: string;
-    name: string;
-    title: string;
-    notes: string;
-    resources: Resource[];
-    tags: Tag[];
-}
 
-const InfoCard: FC<{ dataset: DatasetProps }> = ({ dataset }) => {
+const InfoCard: FC<{ dataset: Dataset, showTags: boolean, showFormats: boolean }> = ({ dataset, showTags, showFormats }) => {
     return (
         <Card className="mx-2 my-4 shadow-md transform transition-transform hover:scale-101 hover:-translate-y-1 hover:shadow-lg max-w-md">
             <CardHeader>
@@ -27,10 +19,10 @@ const InfoCard: FC<{ dataset: DatasetProps }> = ({ dataset }) => {
                 }
             </CardHeader>
             {
-                (dataset.resources.length > 0 || dataset.tags.length > 0) && (
+                (dataset.resources.length > 0 || dataset.tags.length > 0 || showTags || showFormats) && (
                     <CardContent>
                         {/* Section for Tag Badges */}
-                        {dataset.tags.length > 0 && (
+                        {dataset.tags.length > 0 && showTags && (
                             <div>
                                 {dataset.tags.map((tag, index) => (
                                     <Badge variant="secondary" key={index} className="m-0.5">
@@ -40,7 +32,7 @@ const InfoCard: FC<{ dataset: DatasetProps }> = ({ dataset }) => {
                             </div>
                         )}
                         {/* Section for Format Badges */}
-                        {dataset.resources.length > 0 && (
+                        {dataset.resources.length > 0 && showFormats && (
                             <div className="mt-2">
                                 {dataset.resources
                                     .filter((resource) => resource.format.length > 0)
@@ -63,11 +55,44 @@ const InfoCard: FC<{ dataset: DatasetProps }> = ({ dataset }) => {
 
 const Datasets: FC<{ state: State; dispatch: Dispatch<{ type: string; payload: unknown }> }> = ({ state, dispatch }) => {
     const searchQuery = state.datasetSearchQuery.toLowerCase();
+    const searchTerms = searchQuery.split(" ").filter(term => term.length > 0);
 
     const filteredDatasets = state.datasets.filter((dataset) =>
         dataset.title.toLowerCase().includes(searchQuery) ||
         dataset.notes.toLowerCase().includes(searchQuery)
     );
+
+    const sortedDatasets = filteredDatasets.sort((a, b) => {
+        switch (state.datasetSort) {
+            case "alphabetical ascending":
+                return a.title.localeCompare(b.title);
+            case "alphabetical descending":
+                return b.title.localeCompare(a.title);
+            case "time ascending":
+                return new Date(a.metadata_created).getTime() - new Date(b.metadata_created).getTime();
+            case "time descending":
+                return new Date(b.metadata_created).getTime() - new Date(a.metadata_created).getTime();
+            case "relevance":
+                const relevanceScore = (dataset: Dataset) => {
+                    const title = dataset.title.toLowerCase();
+                    const notes = dataset.notes.toLowerCase();
+
+                    let score = 0;
+                    searchTerms.forEach(term => {
+                        if (title.includes(term)) score += 10;
+                        if (notes.includes(term)) score += 5;
+                        score += (title.match(new RegExp(term, "g")) || []).length;
+                        score += (notes.match(new RegExp(term, "g")) || []).length;
+                    });
+
+                    return score;
+                };
+
+                return relevanceScore(b) - relevanceScore(a);
+            default:
+                return 0;
+        }
+    });
 
     return (
         <div className="mx-5 mt-5">
@@ -76,8 +101,8 @@ const Datasets: FC<{ state: State; dispatch: Dispatch<{ type: string; payload: u
                 spacing={2}
                 className="flex overflow-x-hidden"
             >
-                {filteredDatasets.map((dataset, index) => (
-                    <InfoCard key={index} dataset={dataset} />
+                {sortedDatasets.map((dataset, index) => (
+                    <InfoCard key={index} dataset={dataset} showTags={state.datasetShowTags} showFormats={state.datasetShowFormats} />
                 ))}
             </Masonry>
         </div>

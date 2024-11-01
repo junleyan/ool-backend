@@ -4,12 +4,11 @@ import AppSidebar from "@/components/app-sidebar";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
 import { Separator } from "@/components/ui/separator";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { ChangeEvent, useCallback, useEffect, useReducer, useState } from "react";
+import { ChangeEvent, useEffect, useReducer, useState } from "react";
 import { data } from "../utils/data";
-import Datasets from "@/components/dataset";
-import { Input } from "@/components/ui/input";
-import { Search } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import DatasetToolbar from "@/components/datasets/dataset-toolbar";
+import Datasets from "@/components/datasets/dataset";
 
 export interface State {
     filters: {
@@ -19,14 +18,7 @@ export interface State {
         licenses: SelectOption[];
         formats: SelectOption[];
     };
-    datasets: {
-        state: string;
-        name: string;
-        title: string;
-        notes: string;
-        tags: Tag[];
-        resources: Resource[];
-    }[];
+    datasets: Dataset[];
     organization: string | null;
     groups: string[];
     tags: string[];
@@ -34,6 +26,19 @@ export interface State {
     isLoadingDatasets: boolean;
     stage: string;
     datasetSearchQuery: string;
+    datasetSort: string;
+    datasetShowTags: boolean;
+    datasetShowFormats: boolean;
+}
+
+export interface Dataset {
+    state: string;
+    name: string;
+    title: string;
+    notes: string;
+    metadata_created: string;
+    tags: Tag[];
+    resources: Resource[];
 }
 
 export interface SelectOption {
@@ -78,11 +83,13 @@ export default function Home() {
         isLoadingFilters: true,
         isLoadingDatasets: true,
         stage: 'select',
-        datasetSearchQuery: ''
+        datasetSearchQuery: '',
+        datasetSort: 'time descending',
+        datasetShowTags: true,
+        datasetShowFormats: true,
     }
 
     const [state, dispatch] = useReducer(reducer, INITIAL_STATE);
-    const [searchQuery, setSearchQuery] = useState("");
 
     useEffect(() => {
         axiosHandler();
@@ -119,20 +126,6 @@ export default function Home() {
         dispatch({ type: "isLoadingDatasets", payload: false });
     }
 
-    const handleSearchChange = (event: ChangeEvent<HTMLInputElement>) => {
-        setSearchQuery(event.target.value);
-        dispatch({ type: "isLoadingDatasets", payload: true }); // Set loading state to true on input change
-    };
-
-    useEffect(() => {
-        const debounceTimeout = setTimeout(() => {
-            dispatch({ type: 'datasetSearchQuery', payload: searchQuery });
-            dispatch({ type: 'isLoadingDatasets', payload: false }); // Set loading state to false after debounce
-        }, 750);
-
-        return () => clearTimeout(debounceTimeout);
-    }, [searchQuery, dispatch]);
-
     return (
         <SidebarProvider>
             <AppSidebar state={state} dispatch={dispatch} />
@@ -142,26 +135,21 @@ export default function Home() {
                     <Separator orientation="vertical" className="mr-2 h-4" />
                     <Breadcrumb>
                         <BreadcrumbList>
-                            <BreadcrumbItem className="hidden md:block">
-                                <BreadcrumbLink href="#">
-                                    Select Your Dataset
-                                </BreadcrumbLink>
+                            <BreadcrumbItem className={`hidden ${state.stage === 'select' && 'text-zinc-950'} md:block`}>
+                                Select Your Dataset
                             </BreadcrumbItem>
-                            <BreadcrumbSeparator className="hidden md:block" />
-                            <BreadcrumbItem>
-                                <BreadcrumbPage>Data Visualization</BreadcrumbPage>
-                            </BreadcrumbItem>
+                            {
+                                state.stage === 'visualize' &&
+                                <>
+                                    <BreadcrumbSeparator className="hidden md:block" />
+                                    <BreadcrumbItem>
+                                        <BreadcrumbPage>Data Visualization</BreadcrumbPage>
+                                    </BreadcrumbItem>
+                                </>
+                            }
                         </BreadcrumbList>
                     </Breadcrumb>
-                    <div className="relative ml-auto mr-3.5">
-                        <Search className="absolute left-2 top-3 h-4 w-4 text-muted-foreground" />
-                        <Input
-                            placeholder="Search"
-                            className="pl-8"
-                            value={searchQuery}
-                            onChange={handleSearchChange}
-                        />
-                    </div>
+                    <DatasetToolbar state={state} dispatch={dispatch} />
                 </header>
                 <main>
                     {
