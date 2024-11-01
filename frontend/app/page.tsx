@@ -29,6 +29,7 @@ export interface State {
     datasetSort: string;
     datasetShowTags: boolean;
     datasetShowFormats: boolean;
+    datasetShowBookmarkOnly: boolean;
     selectedDataset: string | null;
 }
 
@@ -88,6 +89,7 @@ export default function Home() {
         datasetSort: 'time descending',
         datasetShowTags: true,
         datasetShowFormats: true,
+        datasetShowBookmarkOnly: true,
         selectedDataset: null
     }
 

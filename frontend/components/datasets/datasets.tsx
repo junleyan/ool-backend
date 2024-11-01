@@ -1,9 +1,10 @@
 import { Dataset, State } from "@/app/page";
-import { Dispatch, FC } from "react";
+import { Dispatch, FC, useEffect, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
 import { Badge } from "../ui/badge";
 import { getFormatColor } from "@/utils/convert";
 import Masonry from '@mui/lab/Masonry';
+import { Bookmark, BookmarkCheck } from "lucide-react";
 
 interface InfoCardProps {
     dataset: Dataset;
@@ -13,52 +14,84 @@ interface InfoCardProps {
 }
 
 const InfoCard: React.FC<InfoCardProps> = ({ dataset, showTags, showFormats, dispatch }) => {
+    const [isBookmarked, setIsBookmarked] = useState(false);
+
+    useEffect(() => {
+        const bookmarks = JSON.parse(localStorage.getItem("bookmarked") || "[]");
+        setIsBookmarked(bookmarks.includes(dataset.name));
+    }, [dataset.name]);
+
+    const handleBookmarkToggle = () => {
+        const bookmarks = JSON.parse(localStorage.getItem("bookmarked") || "[]");
+        let updatedBookmarks;
+
+        if (isBookmarked) {
+            updatedBookmarks = bookmarks.filter((name: string) => name !== dataset.name);
+        } else {
+            updatedBookmarks = [...bookmarks, dataset.name];
+        }
+
+        localStorage.setItem("bookmarked", JSON.stringify(updatedBookmarks));
+        setIsBookmarked(!isBookmarked);
+    };
+
     const handleCardHeaderClick = () => {
         dispatch({ type: "stage", payload: "visualize" });
         dispatch({ type: "selectedDataset", payload: dataset.name });
     };
+
     return (
-        <Card className="mx-2 my-4 shadow-md transform transition-transform hover:scale-101 hover:-translate-y-1 hover:shadow-lg max-w-md">
+        <Card className="mx-2 my-4 shadow-md transform transition-transform hover:scale-101 hover:-translate-y-1 hover:shadow-lg max-w-md relative">
+            {/* Bookmark Icon */}
+            <div
+                className="absolute top-2 right-2 cursor-pointer"
+                onClick={handleBookmarkToggle}
+            >
+                {isBookmarked ? (
+                    <BookmarkCheck className="text-blue-500" />
+                ) : (
+                    <Bookmark className="text-gray-500" />
+                )}
+            </div>
+
             <CardHeader className="cursor-pointer" onClick={handleCardHeaderClick}>
                 <CardTitle>{dataset.title}</CardTitle>
-                {
-                    dataset.notes.length > 0 &&
+                {dataset.notes.length > 0 && (
                     <CardDescription className="break-words whitespace-normal">
                         <div dangerouslySetInnerHTML={{ __html: dataset.notes }} />
                     </CardDescription>
-                }
+                )}
             </CardHeader>
-            {
-                (dataset.resources.length > 0 || dataset.tags.length > 0 || showTags || showFormats) && (
-                    <CardContent>
-                        {/* Section for Tag Badges */}
-                        {dataset.tags.length > 0 && showTags && (
-                            <div>
-                                {dataset.tags.map((tag, index) => (
-                                    <Badge variant="secondary" key={index} className="m-0.5">
-                                        {tag.display_name}
+            {(dataset.resources.length > 0 || dataset.tags.length > 0 || showTags || showFormats) && (
+                <CardContent>
+                    {/* Section for Tag Badges */}
+                    {dataset.tags.length > 0 && showTags && (
+                        <div>
+                            {dataset.tags.map((tag, index) => (
+                                <Badge variant="secondary" key={index} className="m-0.5">
+                                    {tag.display_name}
+                                </Badge>
+                            ))}
+                        </div>
+                    )}
+                    {/* Section for Format Badges */}
+                    {dataset.resources.length > 0 && showFormats && (
+                        <div className="mt-2">
+                            {dataset.resources
+                                .filter((resource) => resource.format.length > 0)
+                                .map((resource, index) => (
+                                    <Badge
+                                        key={index}
+                                        className="m-0.5"
+                                        style={{ backgroundColor: getFormatColor(resource.format) }}
+                                    >
+                                        {resource.format}
                                     </Badge>
                                 ))}
-                            </div>
-                        )}
-                        {/* Section for Format Badges */}
-                        {dataset.resources.length > 0 && showFormats && (
-                            <div className="mt-2">
-                                {dataset.resources
-                                    .filter((resource) => resource.format.length > 0)
-                                    .map((resource, index) => (
-                                        <Badge key={index}
-                                            className="m-0.5"
-                                            style={{ backgroundColor: getFormatColor(resource.format) }}
-                                        >
-                                            {resource.format}
-                                        </Badge>
-                                    ))}
-                            </div>
-                        )}
-                    </CardContent>
-                )
-            }
+                        </div>
+                    )}
+                </CardContent>
+            )}
         </Card>
     );
 };
