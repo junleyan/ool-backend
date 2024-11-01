@@ -1,101 +1,157 @@
-import Image from "next/image";
+'use client';
+
+import AppSidebar from "@/components/app-sidebar";
+import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
+import { Separator } from "@/components/ui/separator";
+import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { useEffect, useReducer } from "react";
+import { data } from "../utils/data";
+import Datasets from "@/components/dataset";
+
+export interface State {
+    filters: {
+        organizations: SelectOption[];
+        groups: SelectOption[];
+        tags: SelectOption[];
+        licenses: SelectOption[];
+        formats: SelectOption[];
+    };
+    datasets: {
+        state: string;
+        name: string;
+        title: string;
+        notes: string;
+        tags: Tag[];
+        resources: Resource[];
+    }[];
+    organization: string | null;
+    groups: string[];
+    tags: string[];
+    isLoadingFilters: boolean;
+    isLoadingDatasets: boolean;
+    stage: string;
+}
+
+export interface SelectOption {
+    label: string;
+    value: string;
+    count: number;
+}
+
+export interface Tag {
+    display_name: string;
+}
+
+export interface Resource {
+    format: string;
+    state: string;
+}
+
+function reducer(state: State, action: { type: string; payload: unknown }): State {
+    if (action.type in state) {
+        return {
+            ...state,
+            [action.type]: action.payload,
+        };
+    }
+    return state;
+}
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
-  );
+    const INITIAL_STATE = {
+        filters: {
+            organizations: [],
+            groups: [],
+            tags: [],
+            licenses: [],
+            formats: []
+        },
+        datasets: [],
+        organization: null,
+        groups: [],
+        tags: [],
+        isLoadingFilters: true,
+        isLoadingDatasets: true,
+        stage: 'select'
+    }
+
+    const [state, dispatch] = useReducer(reducer, INITIAL_STATE);
+
+    useEffect(() => {
+        axiosHandler();
+    }, []);
+
+    useEffect(() => {
+        if (state.isLoadingFilters) {
+            updateFilters();
+        }
+    }, [state.isLoadingFilters]);
+
+    useEffect(() => {
+        if (!state.isLoadingFilters) {
+            dispatch({ type: "isLoadingFilters", payload: true });
+        }
+        if (!state.isLoadingDatasets) {
+            dispatch({ type: "isLoadingDatasets", payload: true });
+        }
+    }, [state.organization, state.groups, state.tags]);
+
+    const axiosHandler = async () => {
+        const DATA = await data.getFilters();
+        dispatch({ type: "filters", payload: DATA.filters });
+        dispatch({ type: "datasets", payload: DATA.results });
+        dispatch({ type: "isLoadingFilters", payload: false });
+        dispatch({ type: "isLoadingDatasets", payload: false });
+    };
+
+    const updateFilters = async () => {
+        const DATA = await data.getDataset(state.organization, state.groups, state.tags);
+        dispatch({ type: "filters", payload: DATA.filters });
+        dispatch({ type: "datasets", payload: DATA.results });
+        dispatch({ type: "isLoadingFilters", payload: false });
+        dispatch({ type: "isLoadingDatasets", payload: false });
+    }
+
+    return (
+        <SidebarProvider>
+            <AppSidebar state={state} dispatch={dispatch} />
+            <SidebarInset>
+                <header className="flex sticky top-0 bg-background h-16 shrink-0 items-center gap-2 border-b px-4 z-10">
+                    <SidebarTrigger className="-ml-1" />
+                    <Separator orientation="vertical" className="mr-2 h-4" />
+                    <Breadcrumb>
+                        <BreadcrumbList>
+                            <BreadcrumbItem className="hidden md:block">
+                                <BreadcrumbLink href="#">
+                                    Select Your Dataset
+                                </BreadcrumbLink>
+                            </BreadcrumbItem>
+                            <BreadcrumbSeparator className="hidden md:block" />
+                            <BreadcrumbItem>
+                                <BreadcrumbPage>Data Visualization</BreadcrumbPage>
+                            </BreadcrumbItem>
+                        </BreadcrumbList>
+                    </Breadcrumb>
+                </header>
+                <main>
+                    {
+                        state.isLoadingDatasets ?
+                            <div className="flex flex-1 flex-col gap-4">
+                                {Array.from({ length: 10 }).map((_, index) => (
+                                    <div
+                                        key={index}
+                                        className="aspect-video h-12 w-full rounded-lg bg-muted/50"
+                                    />
+                                ))}
+                            </div>
+                            :
+                            <div className="flex flex-1 flex-col w-0 min-w-full">
+                                <Datasets state={state} dispatch={dispatch}/>
+                            </div>
+                    }
+                </main>
+            </SidebarInset>
+        </SidebarProvider>
+    );
 }
