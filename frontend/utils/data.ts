@@ -20,10 +20,6 @@ interface DatasetResult {
     filters: DatasetFilters;
 }
 
-interface CSVResult {
-    [key: string]: string;
-}
-
 export const data = {
     async getFilters(): Promise<DatasetResult> {
         try {
@@ -57,19 +53,5 @@ export const data = {
             console.error('Error fetching datasets:', error);
             throw error;
         }
-    },
-
-    async getCSV(name: string): Promise<CSVResult> {
-        try {
-            const queryParams = new URLSearchParams();
-            if (name) {
-                queryParams.append('name', name);
-            }
-            const response = await axios.get(`https://ottl.vercel.app/api/get/csv?${queryParams.toString()}`);
-            return response.data.data as CSVResult;
-        } catch (error) {
-            console.error('Error fetching datasets:', error);
-            throw error;
-        }
-    },
+    }
 };
