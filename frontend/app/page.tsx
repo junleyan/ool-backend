@@ -4,11 +4,12 @@ import AppSidebar from "@/components/app-sidebar";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
 import { Separator } from "@/components/ui/separator";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { useEffect, useReducer } from "react";
+import { ChangeEvent, useCallback, useEffect, useReducer, useState } from "react";
 import { data } from "../utils/data";
 import Datasets from "@/components/dataset";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export interface State {
     filters: {
@@ -32,6 +33,7 @@ export interface State {
     isLoadingFilters: boolean;
     isLoadingDatasets: boolean;
     stage: string;
+    datasetSearchQuery: string;
 }
 
 export interface SelectOption {
@@ -75,10 +77,12 @@ export default function Home() {
         tags: [],
         isLoadingFilters: true,
         isLoadingDatasets: true,
-        stage: 'select'
+        stage: 'select',
+        datasetSearchQuery: ''
     }
 
     const [state, dispatch] = useReducer(reducer, INITIAL_STATE);
+    const [searchQuery, setSearchQuery] = useState("");
 
     useEffect(() => {
         axiosHandler();
@@ -115,6 +119,20 @@ export default function Home() {
         dispatch({ type: "isLoadingDatasets", payload: false });
     }
 
+    const handleSearchChange = (event: ChangeEvent<HTMLInputElement>) => {
+        setSearchQuery(event.target.value);
+        dispatch({ type: "isLoadingDatasets", payload: true }); // Set loading state to true on input change
+    };
+
+    useEffect(() => {
+        const debounceTimeout = setTimeout(() => {
+            dispatch({ type: 'datasetSearchQuery', payload: searchQuery });
+            dispatch({ type: 'isLoadingDatasets', payload: false }); // Set loading state to false after debounce
+        }, 750);
+
+        return () => clearTimeout(debounceTimeout);
+    }, [searchQuery, dispatch]);
+
     return (
         <SidebarProvider>
             <AppSidebar state={state} dispatch={dispatch} />
@@ -137,15 +155,20 @@ export default function Home() {
                     </Breadcrumb>
                     <div className="relative ml-auto mr-3.5">
                         <Search className="absolute left-2 top-3 h-4 w-4 text-muted-foreground" />
-                        <Input placeholder="Search" className="pl-8" />
+                        <Input
+                            placeholder="Search"
+                            className="pl-8"
+                            value={searchQuery}
+                            onChange={handleSearchChange}
+                        />
                     </div>
                 </header>
                 <main>
                     {
                         state.isLoadingDatasets ?
-                            <div className="flex flex-1 flex-col gap-4">
+                            <div className="flex flex-1 flex-col gap-4 mx-4 mt-4">
                                 {Array.from({ length: 10 }).map((_, index) => (
-                                    <div
+                                    <Skeleton
                                         key={index}
                                         className="aspect-video h-12 w-full rounded-lg bg-muted/50"
                                     />

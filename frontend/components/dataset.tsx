@@ -3,7 +3,7 @@ import { Dispatch, FC } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
 import { Badge } from "./ui/badge";
 import { getFormatColor } from "@/utils/convert";
-import Masonry from 'react-masonry-css';
+import Masonry from '@mui/lab/Masonry';
 
 interface DatasetProps {
     state: string;
@@ -61,25 +61,27 @@ const InfoCard: FC<{ dataset: DatasetProps }> = ({ dataset }) => {
     );
 };
 
-const BREAK_POINT_COLUMNS_OBJ = {
-    default: 3,
-    1280: 2,
-    800: 1
-};
-
 const Datasets: FC<{ state: State; dispatch: Dispatch<{ type: string; payload: unknown }> }> = ({ state, dispatch }) => {
+    const searchQuery = state.datasetSearchQuery.toLowerCase();
+
+    const filteredDatasets = state.datasets.filter((dataset) =>
+        dataset.title.toLowerCase().includes(searchQuery) ||
+        dataset.notes.toLowerCase().includes(searchQuery)
+    );
+
     return (
-        <Masonry
-            breakpointCols={BREAK_POINT_COLUMNS_OBJ}
-            className="flex mx-5"
-            columnClassName="bg-clip-padding"
-        >
-            {state.datasets.map((dataset, index) => (
-                <InfoCard key={index} dataset={dataset} />
-            ))}
-        </Masonry>
+        <div className="mx-5 mt-5">
+            <Masonry
+                columns={{ xs: 1, sm: 2, md: 3 }}
+                spacing={2}
+                className="flex overflow-x-hidden"
+            >
+                {filteredDatasets.map((dataset, index) => (
+                    <InfoCard key={index} dataset={dataset} />
+                ))}
+            </Masonry>
+        </div>
     );
 };
-
 
 export default Datasets;
