@@ -15,7 +15,7 @@ interface InfoCardProps {
     dispatch: React.Dispatch<{ type: string; payload: unknown }>;
 }
 
-const InfoCard: React.FC<InfoCardProps> = ({ dataset, showTags, showFormats, state, dispatch }) => {
+const InfoCard: FC<InfoCardProps> = ({ dataset, showTags, showFormats, state, dispatch }) => {
     const [isBookmarked, setIsBookmarked] = useState(false);
 
     useEffect(() => {
@@ -40,7 +40,7 @@ const InfoCard: React.FC<InfoCardProps> = ({ dataset, showTags, showFormats, sta
     const handleCardHeaderClick = () => {
         const previousSelectDataset = state.selectedDataset;
         dispatch({ type: "stage", payload: "visualize" });
-        dispatch({ type: "selectedDataset", payload: dataset.name });
+        dispatch({ type: "selectedDataset", payload: dataset });
         toast("Dataset Selected!", {
             description: (
                 <>

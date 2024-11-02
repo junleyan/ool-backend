@@ -26,13 +26,15 @@ export interface State {
     tags: string[];
     isLoadingFilters: boolean;
     isLoadingDatasets: boolean;
+    isLoadingCSV: boolean;
     stage: string;
     datasetSearchQuery: string;
     datasetSort: string;
     datasetShowTags: boolean;
     datasetShowFormats: boolean;
     datasetShowBookmarkOnly: boolean;
-    selectedDataset: string | null;
+    selectedDataset: Dataset | null;
+    csv: CSV[];
 }
 
 export interface Dataset {
@@ -58,6 +60,10 @@ export interface Tag {
 export interface Resource {
     format: string;
     state: string;
+}
+
+export interface CSV {
+    [key: string]: string;
 }
 
 function reducer(state: State, action: { type: string; payload: unknown }): State {
@@ -86,13 +92,15 @@ export default function Home() {
         tags: [],
         isLoadingFilters: true,
         isLoadingDatasets: true,
+        isLoadingCSV: true,
         stage: 'select',
         datasetSearchQuery: '',
         datasetSort: 'time descending',
         datasetShowTags: true,
         datasetShowFormats: true,
         datasetShowBookmarkOnly: false,
-        selectedDataset: null
+        selectedDataset: null,
+        csv: []
     }
 
     const [state, dispatch] = useReducer(reducer, INITIAL_STATE);
@@ -116,6 +124,13 @@ export default function Home() {
         }
     }, [state.organization, state.groups, state.tags]);
 
+    useEffect(() => {
+        if (state.selectedDataset) {
+            dispatch({ type: "isLoadingCSV", payload: true });
+            updateCSV(state.selectedDataset.name);
+        }
+    }, [state.selectedDataset]);
+
     const axiosHandler = async () => {
         const DATA = await data.getFilters();
         dispatch({ type: "filters", payload: DATA.filters });
@@ -130,6 +145,12 @@ export default function Home() {
         dispatch({ type: "datasets", payload: DATA.results });
         dispatch({ type: "isLoadingFilters", payload: false });
         dispatch({ type: "isLoadingDatasets", payload: false });
+    }
+
+    const updateCSV = async (name: string) => {
+        const DATA = await data.getCSV(name);
+        dispatch({ type: "csv", payload: DATA });
+        dispatch({ type: "isLoadingCSV", payload: false });
     }
 
     const handleStageChange = (stage: string) => {
@@ -193,7 +214,7 @@ export default function Home() {
                                             state.stage === 'select' ?
                                                 <Datasets state={state} dispatch={dispatch} />
                                                 :
-                                                <Visualization />
+                                                <Visualization state={state} dispatch={dispatch} />
                                         }
                                     </>
                             }
