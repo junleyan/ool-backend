@@ -5,15 +5,17 @@ import { Badge } from "../ui/badge";
 import { getFormatColor } from "@/utils/convert";
 import Masonry from '@mui/lab/Masonry';
 import { Bookmark, BookmarkCheck } from "lucide-react";
+import { toast } from "sonner";
 
 interface InfoCardProps {
     dataset: Dataset;
     showTags: boolean;
     showFormats: boolean;
+    state: State;
     dispatch: React.Dispatch<{ type: string; payload: unknown }>;
 }
 
-const InfoCard: React.FC<InfoCardProps> = ({ dataset, showTags, showFormats, dispatch }) => {
+const InfoCard: React.FC<InfoCardProps> = ({ dataset, showTags, showFormats, state, dispatch }) => {
     const [isBookmarked, setIsBookmarked] = useState(false);
 
     useEffect(() => {
@@ -36,8 +38,24 @@ const InfoCard: React.FC<InfoCardProps> = ({ dataset, showTags, showFormats, dis
     };
 
     const handleCardHeaderClick = () => {
+        const previousSelectDataset = state.selectedDataset;
         dispatch({ type: "stage", payload: "visualize" });
         dispatch({ type: "selectedDataset", payload: dataset.name });
+        toast("Dataset Selected!", {
+            description: (
+                <>
+                    <i>{dataset.title}</i>
+                </>
+            ),
+            action: {
+                label: "Undo",
+                onClick: () => {
+                    dispatch({ type: "stage", payload: "select" });
+                    dispatch({ type: "selectedDataset", payload: previousSelectDataset });
+                    toast("Undone Selection!");
+                }
+            }
+        });
     };
 
     return (
@@ -155,7 +173,7 @@ const Datasets: FC<{ state: State; dispatch: Dispatch<{ type: string; payload: u
                 className="flex overflow-x-hidden"
             >
                 {sortedDatasets.map((dataset, index) => (
-                    <InfoCard key={index} dataset={dataset} showTags={state.datasetShowTags} showFormats={state.datasetShowFormats} dispatch={dispatch} />
+                    <InfoCard key={index} dataset={dataset} showTags={state.datasetShowTags} showFormats={state.datasetShowFormats} state={state} dispatch={dispatch} />
                 ))}
             </Masonry>
         </div>

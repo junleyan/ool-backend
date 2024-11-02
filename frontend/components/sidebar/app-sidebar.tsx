@@ -5,8 +5,8 @@ import { Badge } from "@/components/ui/badge"
 import Image from "next/image"
 import { Building, ChevronRightIcon, Tags, Users, X as CloseIcon } from "lucide-react"
 import { Dispatch } from "react"
-import Combobox from "./filters/combobox"
-import MultiSelectCombobox from "./filters/multi-select-combobox"
+import Combobox from "../filters/combobox"
+import MultiSelectCombobox from "../filters/multi-select-combobox"
 
 interface FilterBadgeProps {
     value: string
