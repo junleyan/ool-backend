@@ -122,6 +122,7 @@ export default function Home() {
         if (!state.isLoadingDatasets) {
             dispatch({ type: "isLoadingDatasets", payload: true });
         }
+        dispatch({ type: "stage", payload: 'select' });
     }, [state.organization, state.groups, state.tags]);
 
     useEffect(() => {
