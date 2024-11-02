@@ -1,12 +1,15 @@
 import { State } from "@/app/page"
-import { Sidebar, SidebarContent, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarMenuAction, SidebarMenuSub, SidebarGroup } from "@/components/ui/sidebar"
+import { Sidebar, SidebarContent, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarMenuAction, SidebarMenuSub, SidebarGroup, SidebarFooter } from "@/components/ui/sidebar"
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible"
 import { Badge } from "@/components/ui/badge"
 import Image from "next/image"
-import { Building, ChevronRightIcon, Tags, Users, X as CloseIcon } from "lucide-react"
+import { Building, ChevronRightIcon, Tags, Users, X as CloseIcon, Sun, Moon } from "lucide-react"
 import { Dispatch } from "react"
 import Combobox from "../filters/combobox"
 import MultiSelectCombobox from "../filters/multi-select-combobox"
+import { useTheme } from "next-themes"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu"
+import { Button } from "../ui/button"
 
 interface FilterBadgeProps {
     value: string
@@ -31,6 +34,8 @@ const FilterBadge: React.FC<FilterBadgeProps> = ({ value, getLabel, onRemove }) 
 }
 
 const AppSidebar = ({ state, dispatch }: { state: State, dispatch: Dispatch<{ type: string; payload: unknown }> }) => {
+
+    const { setTheme } = useTheme()
 
     const getGroupLabel = (value: string) => {
         const group = state.filters.groups.find(group => group.value === value)
@@ -62,8 +67,8 @@ const AppSidebar = ({ state, dispatch }: { state: State, dispatch: Dispatch<{ ty
                         height={60} />
                     <div className="mr-2">
                         <p className="text-sm font-bold">Hawaii Open Data</p>
-                        <p className="text-xs text-gray-700">Government that is</p>
-                        <p className="text-xs text-gray-700"><b>open</b> and <b>transparent</b></p>
+                        <p className="text-xs text-muted-foreground">Government that is</p>
+                        <p className="text-xs text-muted-foreground"><b>open</b> and <b>transparent</b></p>
                     </div>
                 </div>
             </SidebarHeader>
@@ -204,6 +209,30 @@ const AppSidebar = ({ state, dispatch }: { state: State, dispatch: Dispatch<{ ty
                     </SidebarMenu>
                 </SidebarGroup>
             </SidebarContent>
+
+            {/* Footer */}
+            <SidebarFooter>
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="outline" size="icon">
+                            <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+                            <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+                            <span className="sr-only">Toggle theme</span>
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => setTheme("light")}>
+                            Light
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setTheme("dark")}>
+                            Dark
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setTheme("system")}>
+                            System
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+            </SidebarFooter>
         </Sidebar>
     )
 }
