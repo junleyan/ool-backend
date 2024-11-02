@@ -3,7 +3,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 const Visualization = () => {
     return (
         <>
-            <Tabs defaultValue="overview" className="my-5 mx-5">
+            <Tabs defaultValue="overview" className="my-4 mx-5">
                 <TabsList>
                     <TabsTrigger autoFocus value="overview">Overview</TabsTrigger>
                     <TabsTrigger value="analytics">

@@ -10,6 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import DatasetToolbar from "@/components/datasets/dataset-toolbar";
 import Datasets from "@/components/datasets/datasets";
 import Visualization from "@/components/visualization/visualization";
+import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuShortcut, ContextMenuTrigger } from "@/components/ui/context-menu";
 
 export interface State {
     filters: {
@@ -135,61 +136,77 @@ export default function Home() {
         dispatch({ type: "stage", payload: stage });
     }
 
+    const handleClearAllFilters = () => {
+        dispatch({ type: "organization", payload: null });
+        dispatch({ type: "groups", payload: [] });
+        dispatch({ type: "tags", payload: [] });
+    }
+
     return (
-        <SidebarProvider>
-            <AppSidebar state={state} dispatch={dispatch} />
-            <SidebarInset>
-                <header className="flex sticky top-0 bg-background h-16 shrink-0 items-center gap-2 border-b px-4 z-10">
-                    <SidebarTrigger className="-ml-1" />
-                    <Separator orientation="vertical" className="mr-2 h-4" />
-                    <Breadcrumb>
-                        <BreadcrumbList>
-                            <BreadcrumbItem className={`hidden cursor-pointer ${state.stage !== 'select' ? 'opacity-50' : 'opacity-100'} md:block`}>
-                                <BreadcrumbLink onClick={() => handleStageChange('select')}>
-                                    Select Your Dataset
-                                </BreadcrumbLink>
-                            </BreadcrumbItem>
-                            {
-                                state.selectedDataset &&
-                                <>
-                                    <BreadcrumbSeparator className="hidden md:block" />
-                                    <BreadcrumbItem className={`cursor-pointer ${state.stage !== 'visualize' ? 'opacity-50' : 'opacity-100'}`}>
-                                        <BreadcrumbLink onClick={() => handleStageChange('visualize')}>
-                                            Data Visualization
+        <ContextMenu>
+            <ContextMenuTrigger>
+                <SidebarProvider>
+                    <AppSidebar state={state} dispatch={dispatch} />
+                    <SidebarInset>
+                        <header className="flex sticky top-0 bg-background h-16 shrink-0 items-center gap-2 border-b px-4 z-10">
+                            <SidebarTrigger className="-ml-1" />
+                            <Separator orientation="vertical" className="mr-2 h-4" />
+                            <Breadcrumb>
+                                <BreadcrumbList>
+                                    <BreadcrumbItem className={`hidden cursor-pointer ${state.stage !== 'select' ? 'opacity-50' : 'opacity-100'} md:block`}>
+                                        <BreadcrumbLink onClick={() => handleStageChange('select')}>
+                                            Select Your Dataset
                                         </BreadcrumbLink>
                                     </BreadcrumbItem>
-                                </>
+                                    {
+                                        state.selectedDataset &&
+                                        <>
+                                            <BreadcrumbSeparator className="hidden md:block" />
+                                            <BreadcrumbItem className={`cursor-pointer ${state.stage !== 'visualize' ? 'opacity-50' : 'opacity-100'}`}>
+                                                <BreadcrumbLink onClick={() => handleStageChange('visualize')}>
+                                                    Data Visualization
+                                                </BreadcrumbLink>
+                                            </BreadcrumbItem>
+                                        </>
+                                    }
+                                </BreadcrumbList>
+                            </Breadcrumb>
+                            {
+                                state.stage === 'select' &&
+                                <DatasetToolbar state={state} dispatch={dispatch} />
                             }
-                        </BreadcrumbList>
-                    </Breadcrumb>
-                    {
-                        state.stage === 'select' &&
-                        <DatasetToolbar state={state} dispatch={dispatch} />
-                    }
-                </header>
-                <main>
-                    {
-                        state.isLoadingDatasets ?
-                            <div className="flex flex-1 flex-col gap-4 mx-4 mt-4">
-                                {Array.from({ length: 10 }).map((_, index) => (
-                                    <Skeleton
-                                        key={index}
-                                        className="aspect-video h-12 w-full rounded-lg bg-muted/50"
-                                    />
-                                ))}
-                            </div>
-                            :
-                            <>
-                                {
-                                    state.stage === 'select' ?
-                                        <Datasets state={state} dispatch={dispatch} />
-                                        :
-                                        <Visualization />
-                                }
-                            </>
-                    }
-                </main>
-            </SidebarInset>
-        </SidebarProvider>
+                        </header>
+                        <main>
+                            {
+                                state.isLoadingDatasets ?
+                                    <div className="flex flex-1 flex-col gap-4 mx-4 mt-4">
+                                        {Array.from({ length: 10 }).map((_, index) => (
+                                            <Skeleton
+                                                key={index}
+                                                className="aspect-video h-12 w-full rounded-lg bg-muted/50"
+                                            />
+                                        ))}
+                                    </div>
+                                    :
+                                    <>
+                                        {
+                                            state.stage === 'select' ?
+                                                <Datasets state={state} dispatch={dispatch} />
+                                                :
+                                                <Visualization />
+                                        }
+                                    </>
+                            }
+                        </main>
+                    </SidebarInset>
+                </SidebarProvider>
+            </ContextMenuTrigger>
+            <ContextMenuContent className="w-40">
+                <ContextMenuItem className="cursor-pointer" onClick={handleClearAllFilters}>
+                    Clear All Filters
+                    <ContextMenuShortcut>⌘[</ContextMenuShortcut>
+                </ContextMenuItem>
+            </ContextMenuContent>
+        </ContextMenu>
     );
 }
