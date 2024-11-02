@@ -9,6 +9,7 @@ import { data } from "../utils/data";
 import { Skeleton } from "@/components/ui/skeleton";
 import DatasetToolbar from "@/components/datasets/dataset-toolbar";
 import Datasets from "@/components/datasets/datasets";
+import Visualization from "@/components/visualization/visualization";
 
 export interface State {
     filters: {
@@ -183,7 +184,7 @@ export default function Home() {
                                     state.stage === 'select' ?
                                         <Datasets state={state} dispatch={dispatch} />
                                         :
-                                        <>{state.selectedDataset}</>
+                                        <Visualization />
                                 }
                             </>
                     }
