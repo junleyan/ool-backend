@@ -4,6 +4,7 @@ import express, { json } from 'express';
 import cors from 'cors';
 import { sendJsonResponse } from './utils/jsonResponse.js';
 import hawaiiDataRouter from './routes/hawaiiDataRoutes.js';
+import chatGptRouter from './routes/chatGptRoutes.js';
 
 dotenv.config();
 
@@ -14,6 +15,7 @@ app.use(json());
 app.use(cors());
 
 app.use('/api', hawaiiDataRouter);
+app.use('/api', chatGptRouter);
 
 // Define root route
 app.get('/', (req, res) => {
