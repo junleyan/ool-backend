@@ -62,7 +62,7 @@ export function Graph({ data, title, subtitle, xAxisKey, yAxisKeys, yAxisLabel }
     );
 
     return (
-        <Card>
+        <Card className="mt-4">
             <CardHeader>
                 <CardTitle>{title}</CardTitle>
                 <CardDescription>{subtitle}</CardDescription>
