@@ -1,3 +1,4 @@
+import { CSV } from "@/app/page";
 import axios from "axios";
 
 export interface SelectOption {
@@ -49,6 +50,20 @@ export const data = {
 
             const response = await axios.get(`https://ottl.vercel.app/api/get/dataset?${queryParams.toString()}`);
             return response.data.data as DatasetResult;
+        } catch (error) {
+            console.error('Error fetching datasets:', error);
+            throw error;
+        }
+    },
+
+    async getCSV(name: string): Promise<CSV> {
+        try {
+            const queryParams = new URLSearchParams();
+            if (name) {
+                queryParams.append('name', name);
+            }
+            const response = await axios.get(`https://ottl.vercel.app/api/get/csv?${queryParams.toString()}`);
+            return response.data.data as CSV;
         } catch (error) {
             console.error('Error fetching datasets:', error);
             throw error;
