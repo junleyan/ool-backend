@@ -25,15 +25,15 @@ const Visualization: FC<VisualizationProps> = ({ state, dispatch }) => {
         if (!sortConfig) return 0;
 
         const { column, direction } = sortConfig;
-        const aVal = a[column];
-        const bVal = b[column];
+        const aVal: string | number = a[column] as string | number;
+        const bVal: string | number = b[column] as string | number;
 
-        const isNumeric = (val: any) => !isNaN(parseFloat(val)) && isFinite(val);
+        const isNumeric = (val: string | number): boolean => typeof val === 'number' || (!isNaN(parseFloat(val)) && isFinite(Number(val)));
 
         if (isNumeric(aVal) && isNumeric(bVal)) {
             return direction === "asc"
-                ? parseFloat(aVal) - parseFloat(bVal)
-                : parseFloat(bVal) - parseFloat(aVal);
+                ? parseFloat(aVal as string) - parseFloat(bVal as string)
+                : parseFloat(bVal as string) - parseFloat(aVal as string);
         } else {
             return direction === "asc"
                 ? String(aVal).localeCompare(String(bVal))
