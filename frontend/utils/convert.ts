@@ -4,7 +4,6 @@ export const FORMATS = [
 ];
 
 export const getFormatColor = (format: string) => {
-    console.log(format)
     const BADGE_COLORS = [
         "#E53935", "#FF8A65", "#5D3FD3", "#00796B", "#6D4C41",
         "#6BC04A", "#43A047", "#00ACC1", "#FFB300", "#039BE5", "#1E88E5",
