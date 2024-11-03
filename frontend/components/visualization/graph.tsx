@@ -31,12 +31,14 @@ type ChartConfig = {
 // Define the props for the Graph component
 interface GraphProps {
     data: DataEntry[]; // Required data array
+    title: string;
+    subtitle: string;
     xAxisKey: keyof DataEntry; // Required x-axis key
     yAxisKeys: (keyof DataEntry)[]; // Required y-axis keys
     yAxisLabel?: string; // Optional Y-axis label
 }
 
-export function Graph({ data, xAxisKey, yAxisKeys, yAxisLabel }: GraphProps) {
+export function Graph({ data, title, subtitle, xAxisKey, yAxisKeys, yAxisLabel }: GraphProps) {
     // Create a default config object based on yAxisKeys with explicit typing
     const defaultConfig: ChartConfig = yAxisKeys.reduce((acc, key, index) => {
         acc[key as string] = {
@@ -59,15 +61,11 @@ export function Graph({ data, xAxisKey, yAxisKeys, yAxisLabel }: GraphProps) {
         )
     );
 
-    console.log(`Calculated maxYAxisValue: ${maxYAxisValue}`);
-
     return (
         <Card>
             <CardHeader>
-                <CardTitle>Vehicle Adoption Over Time</CardTitle>
-                <CardDescription>
-                    Total number of Hybrid and Electric Vehicles over the years
-                </CardDescription>
+                <CardTitle>{title}</CardTitle>
+                <CardDescription>{subtitle}</CardDescription>
             </CardHeader>
             <CardContent>
                 <ChartContainer config={defaultConfig}>

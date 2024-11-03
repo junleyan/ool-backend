@@ -31,9 +31,11 @@ const Visualization: FC<VisualizationProps> = ({ state, dispatch }) => {
     }, [activeTab]);
 
     const fetchGraphSetting = async () => {
-        const SAMPLE = JSON.stringify(state.csv.slice(0, Math.min(3, state.csv.length)))
-        const DATA = await data.getXYAxis(SAMPLE);
-        dispatch({ type: "graphSetting", payload: DATA });
+        if (state.selectedDataset) {
+            const SAMPLE = JSON.stringify(state.csv.slice(0, Math.min(3, state.csv.length)))
+            const DATA = await data.getXYAxis(`${state.selectedDataset.title.length > 0 && state.selectedDataset.title}\n${state.selectedDataset.notes.length > 0 && state.selectedDataset.notes}`, SAMPLE);
+            dispatch({ type: "graphSetting", payload: DATA });
+        }
     }
 
     const sortedData = [...state.csv].sort((a, b) => {
@@ -187,9 +189,14 @@ const Visualization: FC<VisualizationProps> = ({ state, dispatch }) => {
                                         state.graphSetting ?
                                             (
                                                 state.graphSetting.graphable ?
-                                                    <Graph data={state.csv} xAxisKey={state.graphSetting.x} yAxisKeys={state.graphSetting.y} />
+                                                    <Graph 
+                                                        data={state.csv}
+                                                        title={state.graphSetting.title}
+                                                        subtitle={state.graphSetting.subtitle}
+                                                        xAxisKey={state.graphSetting.x}
+                                                        yAxisKeys={state.graphSetting.y} />
                                                     :
-                                                    <>Can't graph</>
+                                                    <>Can not graph</>
                                             )
                                             :
                                             <>Loading...</>

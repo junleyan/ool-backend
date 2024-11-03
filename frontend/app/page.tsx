@@ -68,6 +68,8 @@ export interface CSV {
 }
 
 export interface GraphSetting {
+    title: string
+    subtitle: string
     x: string
     y: string[]
     graphable: boolean

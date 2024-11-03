@@ -70,10 +70,11 @@ export const data = {
         }
     },
 
-    async getXYAxis(csv: string): Promise<GraphSetting> {
+    async getXYAxis(info: string, csv: string): Promise<GraphSetting> {
         try {
             const queryParams = new URLSearchParams();
             if (csv) {
+                queryParams.append('info', info);
                 queryParams.append('csv', csv);
             }
             const response = await axios.get(`https://ottl.vercel.app/api/get/xy?${queryParams.toString()}`);
