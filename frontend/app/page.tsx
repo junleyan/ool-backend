@@ -35,6 +35,7 @@ export interface State {
     datasetShowBookmarkOnly: boolean;
     selectedDataset: Dataset | null;
     csv: CSV[];
+    graphSetting: GraphSetting | null;
 }
 
 export interface Dataset {
@@ -64,6 +65,14 @@ export interface Resource {
 
 export interface CSV {
     [key: string]: string;
+}
+
+export interface GraphSetting {
+    title: string
+    subtitle: string
+    x: string
+    y: string[]
+    graphable: boolean
 }
 
 function reducer(state: State, action: { type: string; payload: unknown }): State {
@@ -100,7 +109,8 @@ export default function Home() {
         datasetShowFormats: true,
         datasetShowBookmarkOnly: false,
         selectedDataset: null,
-        csv: []
+        csv: [],
+        graphSetting: null
     }
 
     const [state, dispatch] = useReducer(reducer, INITIAL_STATE);
@@ -146,12 +156,14 @@ export default function Home() {
         dispatch({ type: "datasets", payload: DATA.results });
         dispatch({ type: "isLoadingFilters", payload: false });
         dispatch({ type: "isLoadingDatasets", payload: false });
+        dispatch({ type: "graphSetting", payload: null });
     }
 
     const updateCSV = async (name: string) => {
         const DATA = await data.getCSV(name);
         dispatch({ type: "csv", payload: DATA });
         dispatch({ type: "isLoadingCSV", payload: false });
+        dispatch({ type: "graphSetting", payload: null });
     }
 
     const handleStageChange = (stage: string) => {

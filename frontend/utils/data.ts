@@ -1,4 +1,4 @@
-import { CSV } from "@/app/page";
+import { CSV, GraphSetting } from "@/app/page";
 import axios from "axios";
 
 export interface SelectOption {
@@ -66,6 +66,21 @@ export const data = {
             return response.data.data as CSV;
         } catch (error) {
             console.error('Error fetching datasets:', error);
+            throw error;
+        }
+    },
+
+    async getXYAxis(info: string, csv: string): Promise<GraphSetting> {
+        try {
+            const queryParams = new URLSearchParams();
+            if (csv) {
+                queryParams.append('info', info);
+                queryParams.append('csv', csv);
+            }
+            const response = await axios.get(`https://ottl.vercel.app/api/get/xy?${queryParams.toString()}`);
+            return response.data.data as GraphSetting;
+        } catch (error) {
+            console.error('Error fetching X and Y axis:', error);
             throw error;
         }
     }
