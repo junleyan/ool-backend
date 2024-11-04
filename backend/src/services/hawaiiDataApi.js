@@ -5,6 +5,17 @@ import { error } from 'console';
 
 const API_URL = 'https://opendata.hawaii.gov';
 
+const sanitizeAndFormatNotes = (notes) => {
+    const sanitizedNotes = DOMPurify.sanitize(notes, {
+        FORBID_TAGS: ['style', 'script', 'iframe', 'object', 'embed', 'form', 'img', 'video'],
+        FORBID_ATTR: ['style', 'onerror', 'onclick', 'onload', 'size', 'width', 'height', 'frameborder', 'allowfullscreen']
+    });
+    const formattedNotes = sanitizedNotes
+    .replace(/&nbsp;/g, '') // Replace non-breaking spaces with regular spaces (awkward spacing in some notes)
+    .replace(/\s*Description:\s*/, '<br><br>Description:<br>') // Format description for better readability
+    return formattedNotes;
+}
+
 export const getFilteredDataset = async (organization, groups, tags, formats, licenses) => {
     try {
         let filters = [];
@@ -67,9 +78,15 @@ export const getFilters = async () => {
         const SUCCESS = FIRST_RESPONSE.data.success && SECOND_RESPONSE.data.success;
 
         if (SUCCESS) {
+            const sanitizedAndFormattedData = DATA.map((dataset) => {
+                return {
+                    ...dataset,
+                    notes: sanitizeAndFormatNotes(dataset.notes)
+                }
+            });
             return {
                 count: FIRST_RESPONSE.data.result.count,
-                results: DATA,
+                results: sanitizedAndFormattedData,
                 filters: getList(DATA, API_URL)
             }
         } else {
