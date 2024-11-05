@@ -2,6 +2,7 @@ import axios from 'axios';
 import csv from 'csv-parser';
 import { getList } from '../utils/getList.js';
 import { error } from 'console';
+import { sanitizeNotes } from '../utils/sanitize.js';
 
 const API_URL = 'https://opendata.hawaii.gov';
 
@@ -45,7 +46,7 @@ export const getFilteredDataset = async (organization, groups, tags, formats, li
         if (SUCCESS) {
             return {
                 count: FIRST_RESPONSE.data.result.count,
-                results: DATA,
+                results: sanitizeNotes(DATA),
                 filters: getList(DATA, API_URL)
             };
         } else {
@@ -69,7 +70,7 @@ export const getFilters = async () => {
         if (SUCCESS) {
             return {
                 count: FIRST_RESPONSE.data.result.count,
-                results: DATA,
+                results: sanitizeNotes(DATA),
                 filters: getList(DATA, API_URL)
             }
         } else {
