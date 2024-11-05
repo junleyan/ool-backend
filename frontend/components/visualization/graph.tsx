@@ -1,5 +1,3 @@
-"use client"
-
 import { Line, LineChart, CartesianGrid, XAxis, YAxis, Tooltip } from "recharts"
 
 import {
