@@ -14,7 +14,6 @@
     "axios": "^1.7.7",
     "cors": "^2.8.5",
     "csv-parser": "^3.0.0",
-    "dompurify": "^3.1.7",
     "dotenv": "^16.4.5",
     "express": "^4.21.1",
     "openai": "^4.70.2"
