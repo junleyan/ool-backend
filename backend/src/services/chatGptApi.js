@@ -1,4 +1,6 @@
+import axios from "axios";
 import OpenAI from "openai";
+import { API_URL } from "./hawaiiDataApi.js";
 
 export const getXYAxis = async (csv, info) => {
     try {
@@ -94,6 +96,95 @@ export const getXYAxis = async (csv, info) => {
                 }
             },
         });
+
+        let responseText = response.choices[0].message.content.trim();
+
+        if (responseText.startsWith("```json")) {
+            responseText = responseText.replace(/^```json\s+/, "").replace(/```$/, "").trim();
+        }
+
+        let jsonResponse;
+        try {
+            jsonResponse = JSON.parse(responseText);
+        } catch (parseError) {
+            throw new Error('Error parsing OpenAI response as JSON: ' + parseError.message + ' Response was: ' + responseText);
+        }
+        return jsonResponse;
+    } catch (error) {
+        throw new Error('Error fetching XY Axis from OpenAI: ' + error.message);
+    }
+};
+
+export const getQuestionSuggestions = async (dataset_name) => {
+    try {
+        let RESPONSE = await axios.get(`${API_URL}/api/3/action/package_search?fq=name:${dataset_name}`);
+        const DATASET = RESPONSE.data.result.results.filter(({ name }) => name === dataset_name)[0];
+        const URL = DATASET.resources.filter(({ format }) => format === 'CSV')[0].url;
+
+        RESPONSE = await axios.get(URL, { responseType: 'stream' });
+        const CHUNKS = [];
+        const CSV = await new Promise((resolve, reject) => {
+            RESPONSE.data.on("data", (chunk) => CHUNKS.push(chunk));
+            RESPONSE.data.on("end", () => resolve(Buffer.concat(CHUNKS).toString()));
+            RESPONSE.data.on("error", (err) => reject(err));
+        });
+        const CONTEXT = `Title: ${DATASET.title}\nDESCRIPTION: ${DATASET.notes}\n${CSV}`;
+        
+        const openai = new OpenAI({
+            apiKey: process.env.OPENAI_API_KEY,
+        });
+        const response = await openai.chat.completions.create({
+            model: "gpt-4o",
+            messages: [
+              {
+                "role": "system",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "What are some question to ask about the provided dataset. Questions should be short and simple."
+                  }
+                ]
+              },
+              {
+                "role": "user",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": CONTEXT
+                  }
+                ]
+              }
+            ],
+            temperature: 1,
+            max_tokens: 2048,
+            top_p: 1,
+            frequency_penalty: 0,
+            presence_penalty: 0,
+            response_format: {
+              "type": "json_schema",
+              "json_schema": {
+                "name": "questions_schema",
+                "strict": true,
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "questions": {
+                      "type": "array",
+                      "description": "An array containing a list of 3 short questions.",
+                      "items": {
+                        "type": "string",
+                        "description": "A question represented as a string."
+                      }
+                    }
+                  },
+                  "required": [
+                    "questions"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+          });
 
         let responseText = response.choices[0].message.content.trim();
 

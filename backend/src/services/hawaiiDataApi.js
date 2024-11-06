@@ -4,7 +4,7 @@ import { getList } from '../utils/getList.js';
 import { error } from 'console';
 import { sanitizeNotes } from '../utils/sanitize.js';
 
-const API_URL = 'https://opendata.hawaii.gov';
+export const API_URL = 'https://opendata.hawaii.gov';
 
 export const getFilteredDataset = async (organization, groups, tags, formats, licenses) => {
     try {
