@@ -53,7 +53,7 @@ interface GraphProps {
 export function Graph({ data, title, subtitle, xAxisKey, yAxisKeys, yAxisLabel }: GraphProps) {
     // Get all keys in data as potential X and Y axis keys
     const allKeys = Object.keys(data[0] || {}) as (keyof DataEntry)[];
-    
+
     // State for the currently selected Y-axis keys
     const [visibleYAxisKeys, setVisibleYAxisKeys] = useState(yAxisKeys);
     // State for the currently selected X-axis key
@@ -75,12 +75,38 @@ export function Graph({ data, title, subtitle, xAxisKey, yAxisKeys, yAxisLabel }
             visibleYAxisKeys.map(key => {
                 const value = entry[key];
                 const numericValue = typeof value === "number" ? value : parseFloat(value as string);
-                return !isNaN(numericValue) ? Math.floor(numericValue * 1.1) : 0;
+                return !isNaN(numericValue) ? Math.floor(numericValue) : 0;
             })
         )
     );
 
-    // Toggle function to update visible y-axis keys
+    // Calculate the minimum Y-axis value and set it to 80% of the smallest visible Y-axis value
+    const minYAxisValue = Math.min(
+        ...data.flatMap(entry =>
+            visibleYAxisKeys.map(key => {
+                const value = entry[key];
+                const numericValue = typeof value === "number" ? value : parseFloat(value as string);
+                return !isNaN(numericValue) ? numericValue : 0;
+            })
+        )
+    );
+
+    // Calculate the minimum and maximum X-axis values dynamically based on the selected X-axis key
+    const xValues = data.map(entry => {
+        const value = entry[selectedXAxisKey];
+        return typeof value === "number" ? value : parseFloat(value as string);
+    }).filter(value => !isNaN(value));
+    const minXAxisValue = Math.min(...xValues);
+    const maxXAxisValue = Math.max(...xValues);
+
+    // Sort the data by the selected X-axis key to ensure the graph has a logical line flow
+    const sortedData = [...data].sort((a, b) => {
+        const aValue = typeof a[selectedXAxisKey] === "number" ? a[selectedXAxisKey] : parseFloat(a[selectedXAxisKey] as string);
+        const bValue = typeof b[selectedXAxisKey] === "number" ? b[selectedXAxisKey] : parseFloat(b[selectedXAxisKey] as string);
+        return aValue - bValue;
+    });
+
+    // Toggle function to update visible Y-axis keys
     const toggleYAxisKey = (key: keyof DataEntry) => {
         setVisibleYAxisKeys(prevKeys =>
             prevKeys.includes(key)
@@ -103,11 +129,13 @@ export function Graph({ data, title, subtitle, xAxisKey, yAxisKeys, yAxisLabel }
             <CardContent>
                 <ChartContainer config={defaultConfig}>
                     <LineChart
-                        data={data}
+                        data={sortedData} // Pass the sorted data to the chart for ordered X-axis
                         margin={{ left: 0, right: 12, bottom: 25 }}
                     >
                         <CartesianGrid vertical={false} />
                         <XAxis
+                            type="number"
+                            domain={[minXAxisValue, maxXAxisValue]}
                             dataKey={selectedXAxisKey as string}
                             tickLine={false}
                             axisLine={false}
@@ -119,8 +147,8 @@ export function Graph({ data, title, subtitle, xAxisKey, yAxisKeys, yAxisLabel }
                                 style: { textAnchor: 'middle', fontSize: '12px', fill: '#666' },
                             }}
                         />
-                        <YAxis 
-                            domain={[0, maxYAxisValue]}
+                        <YAxis
+                            domain={[minYAxisValue, maxYAxisValue]} // Use the calculated Y-axis range
                             label={{
                                 value: yAxisLabel || "Count",
                                 angle: -90,
@@ -134,7 +162,7 @@ export function Graph({ data, title, subtitle, xAxisKey, yAxisKeys, yAxisLabel }
                             <Line
                                 key={String(key)}
                                 dataKey={String(key)}
-                                type="natural"
+                                type="linear"
                                 name={String(defaultConfig[key as string]?.label || key)}
                                 stroke={defaultConfig[key as string]?.color}
                                 dot={false}
