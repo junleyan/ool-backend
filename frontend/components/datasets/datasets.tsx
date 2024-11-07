@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui
 import { Badge } from "../ui/badge";
 import { getFormatColor } from "@/utils/convert";
 import Masonry from '@mui/lab/Masonry';
-import { Bookmark, BookmarkCheck } from "lucide-react";
+import { Bookmark, BookmarkCheck, Download, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
 
 interface InfoCardProps {
@@ -16,6 +16,11 @@ interface InfoCardProps {
 }
 
 const InfoCard: FC<InfoCardProps> = ({ dataset, showTags, showFormats, state, dispatch }) => {
+    const resourceTypes = {
+        "download": [    "CSV", "GeoJSON", "ZIP", "KML", "JSON", "RDF", "XLSX", "KMZ", "XLS", "PDF"],
+        "web": ["HTML", "ArcGIS GeoServices REST API", "XML", "OGC WFS", "OGC WMS", "PDF", "MP4"]
+    }
+
     const [isBookmarked, setIsBookmarked] = useState(false);
 
     useEffect(() => {
@@ -98,13 +103,23 @@ const InfoCard: FC<InfoCardProps> = ({ dataset, showTags, showFormats, state, di
                             {dataset.resources
                                 .filter((resource) => resource.format.length > 0)
                                 .map((resource, index) => (
-                                    <Badge
-                                        key={index}
-                                        className="m-0.5"
-                                        style={{ backgroundColor: getFormatColor(resource.format) }}
-                                    >
-                                        {resource.format}
-                                    </Badge>
+                                    <a key={index} href={resource.url} target="_blank">
+                                        <Badge
+                                            key={index}
+                                            className="m-0.5"
+                                            style={{ backgroundColor: getFormatColor(resource.format) }}
+                                            title="Download file"
+                                        >
+                                            <div className="flex items-center">
+                                                <span>{resource.format}</span>
+                                                {resourceTypes.download.includes(resource.format) ? (
+                                                    <Download className="ml-1" size={14} />
+                                                ) : (
+                                                    <ExternalLink className="ml-1" size={14} />
+                                                )}
+                                            </div>
+                                        </Badge>
+                                    </a>
                                 ))}
                         </div>
                     )}
