@@ -108,7 +108,11 @@ const InfoCard: FC<InfoCardProps> = ({ dataset, showTags, showFormats, state, di
                                             key={index}
                                             className="m-0.5"
                                             style={{ backgroundColor: getFormatColor(resource.format) }}
-                                            title="Download file"
+                                            title={
+                                                resourceTypes.download.includes(resource.format)
+                                                    ? "Download " + resource.format
+                                                    : "View " + resource.format
+                                            }
                                         >
                                             <div className="flex items-center">
                                                 <span className="text-white">{resource.format}</span>
