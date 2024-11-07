@@ -36,6 +36,7 @@ export interface State {
     selectedDataset: Dataset | null;
     csv: CSV[];
     graphSetting: GraphSetting | null;
+    chat: Chat[];
 }
 
 export interface Dataset {
@@ -65,6 +66,11 @@ export interface Resource {
 
 export interface CSV {
     [key: string]: string;
+}
+
+export interface Chat {
+    type: string
+    content: string
 }
 
 export interface GraphSetting {
@@ -110,7 +116,8 @@ export default function Home() {
         datasetShowBookmarkOnly: false,
         selectedDataset: null,
         csv: [],
-        graphSetting: null
+        graphSetting: null,
+        chat: []
     }
 
     const [state, dispatch] = useReducer(reducer, INITIAL_STATE);

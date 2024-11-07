@@ -1,14 +1,16 @@
 import { Dispatch, FC, useState, useEffect } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "../ui/card";
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { State } from "@/app/page";
 import { ScrollArea } from "../ui/scroll-area";
 import { Button } from "../ui/button";
-import { ArrowUp, ArrowDown, ArrowUpDown, SlidersHorizontal } from "lucide-react";
+import { ArrowUp, ArrowDown, ArrowUpDown, SlidersHorizontal, CornerDownLeft } from "lucide-react";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuCheckboxItem } from "../ui/dropdown-menu";
 import Graph from "./graph";
 import { data } from "@/utils/data";
+import { ChatBubble, ChatBubbleAvatar, ChatBubbleMessage } from "../ui/chat/chat-bubble";
+import { ChatInput } from "../ui/chat/chat-input";
 
 interface VisualizationProps {
     state: State;
@@ -19,6 +21,7 @@ const Visualization: FC<VisualizationProps> = ({ state, dispatch }) => {
     const [sortConfig, setSortConfig] = useState<{ column: string; direction: "asc" | "desc" } | null>(null);
     const [visibleColumns, setVisibleColumns] = useState<{ [key: string]: boolean }>({});
     const [activeTab, setActiveTab] = useState<string>("table");
+    const [message, setMessage] = useState("");
 
     useEffect(() => {
         setVisibleColumns(Object.keys(state.csv[0] || {}).reduce((acc, key) => ({ ...acc, [key]: true }), {}));
@@ -32,11 +35,11 @@ const Visualization: FC<VisualizationProps> = ({ state, dispatch }) => {
 
     const fetchGraphSetting = async () => {
         if (state.selectedDataset) {
-            const SAMPLE = JSON.stringify(state.csv.slice(0, Math.min(3, state.csv.length)))
+            const SAMPLE = JSON.stringify(state.csv.slice(0, Math.min(3, state.csv.length)));
             const DATA = await data.getXYAxis(`${state.selectedDataset.title.length > 0 && state.selectedDataset.title}\n${state.selectedDataset.notes.length > 0 && state.selectedDataset.notes}`, SAMPLE);
             dispatch({ type: "graphSetting", payload: DATA });
         }
-    }
+    };
 
     const sortedData = [...state.csv].sort((a, b) => {
         if (!sortConfig) return 0;
@@ -78,13 +81,20 @@ const Visualization: FC<VisualizationProps> = ({ state, dispatch }) => {
         }));
     };
 
+    const handleSendMessage = () => {
+        if (message.trim()) {
+            dispatch({ type: "chat", payload: [...state.chat, { type: "user", content: message }] });
+            setMessage(""); // Clear input after sending
+        }
+    };
+
     return (
         <>
             <Tabs defaultValue="table" value={activeTab} onValueChange={setActiveTab} className="my-4 mx-5">
                 <TabsList>
-                    <TabsTrigger value="table">View Data Table</TabsTrigger>
-                    <TabsTrigger disabled={state.isLoadingCSV} value="graph">Visualization</TabsTrigger>
-                    <TabsTrigger value="reports">Reports</TabsTrigger>
+                    <TabsTrigger value="table">Data Table</TabsTrigger>
+                    <TabsTrigger disabled={state.isLoadingCSV} value="graph">Chart</TabsTrigger>
+                    <TabsTrigger value="chat">Chat</TabsTrigger>
                     <TabsTrigger value="notifications">Notifications</TabsTrigger>
                 </TabsList>
                 {
@@ -93,7 +103,7 @@ const Visualization: FC<VisualizationProps> = ({ state, dispatch }) => {
                             <>
                                 <TabsContent value="table">Loading...</TabsContent>
                                 <TabsContent value="graph">Loading...</TabsContent>
-                                <TabsContent value="reports">Loading...</TabsContent>
+                                <TabsContent value="chat">Loading...</TabsContent>
                                 <TabsContent value="notifications">Loading...</TabsContent>
                             </>
                         )
@@ -119,7 +129,7 @@ const Visualization: FC<VisualizationProps> = ({ state, dispatch }) => {
                                                         <DropdownMenuContent className="w-36">
                                                             <DropdownMenuLabel>Toggle Columns</DropdownMenuLabel>
                                                             <DropdownMenuSeparator />
-                                                            <ScrollArea className="h-64">
+                                                            <ScrollArea className="max-h-64">
                                                                 {Object.keys(state.csv[0] || {}).map((key) => (
                                                                     key !== "Title" && (
                                                                         <DropdownMenuCheckboxItem
@@ -189,18 +199,96 @@ const Visualization: FC<VisualizationProps> = ({ state, dispatch }) => {
                                         state.graphSetting ?
                                             (
                                                 state.graphSetting.graphable ?
-                                                    <Graph 
+                                                    <Graph
                                                         data={state.csv}
                                                         title={state.graphSetting.title}
                                                         subtitle={state.graphSetting.subtitle}
                                                         xAxisKey={state.graphSetting.x}
                                                         yAxisKeys={state.graphSetting.y} />
                                                     :
-                                                    <>Can not graph</>
+                                                    <>Cannot graph</>
                                             )
                                             :
                                             <>Loading...</>
                                     }
+                                </TabsContent>
+                                <TabsContent value="chat">
+                                    <Card className="mt-5">
+                                        <CardHeader>
+                                            <CardTitle>Ask AI</CardTitle>
+                                            <CardDescription>Ask AI questions you have for the dataset</CardDescription>
+                                        </CardHeader>
+                                        <CardContent className="grid">
+                                            <ScrollArea className="flex flex-col h-[calc(100vh-375px)]">
+                                                <div className="flex flex-col flex-grow space-y-3">
+                                                    <div className="flex justify-start">
+                                                        <ChatBubble variant="received">
+                                                            <ChatBubbleAvatar fallback="AI" />
+                                                            <ChatBubbleMessage variant="received">
+                                                                Aloha! What question can I answer for you?
+                                                            </ChatBubbleMessage>
+                                                        </ChatBubble>
+                                                    </div>
+                                                    {
+                                                        state.chat.map((msg) => {
+                                                            return msg.type === 'user' ? (
+                                                                <div className="flex justify-end mr-3">
+                                                                    <ChatBubble variant="sent">
+                                                                        <ChatBubbleAvatar fallback="You" />
+                                                                        <ChatBubbleMessage variant="sent">
+                                                                            {msg.content}
+                                                                        </ChatBubbleMessage>
+                                                                    </ChatBubble>
+                                                                </div>
+                                                            ) : (
+                                                                <div className="flex justify-start">
+                                                                    <ChatBubble variant="received">
+                                                                        <ChatBubbleAvatar fallback="AI" />
+                                                                        <ChatBubbleMessage variant="received">
+                                                                            {msg.content}
+                                                                        </ChatBubbleMessage>
+                                                                    </ChatBubble>
+                                                                </div>
+                                                            );
+                                                        })
+                                                    }
+
+                                                    <div className="flex justify-end mr-3">
+                                                        <ChatBubble variant="sent">
+                                                            <ChatBubbleAvatar fallback="You" />
+                                                            <ChatBubbleMessage variant="sent">
+                                                                Hello, how has your day been? I hope you are doing well.
+                                                            </ChatBubbleMessage>
+                                                        </ChatBubble>
+                                                    </div>
+                                                    <div className="flex justify-start">
+                                                        <ChatBubble variant="received">
+                                                            <ChatBubbleAvatar fallback="AI" />
+                                                            <ChatBubbleMessage isLoading />
+                                                        </ChatBubble>
+                                                    </div>
+                                                </div>
+                                                <Card className="mt-3">
+                                                    <CardContent>{JSON.stringify(state.chat)}</CardContent>
+                                                </Card>
+                                            </ScrollArea>
+                                        </CardContent>
+                                        <CardFooter className="flex items-center">
+                                            <ChatInput
+                                                value={message}
+                                                onChange={(e) => setMessage(e.target.value)}
+                                                placeholder="Type your question here..."
+                                                className="min-h-12 resize-none rounded-lg p-3 ring-current flex-1 mr-3"
+                                            />
+                                            <Button
+                                                className="ml-auto gap-1.5"
+                                                onClick={handleSendMessage}
+                                            >
+                                                Send Message
+                                                <CornerDownLeft />
+                                            </Button>
+                                        </CardFooter>
+                                    </Card>
                                 </TabsContent>
                             </>
                         )
@@ -208,6 +296,6 @@ const Visualization: FC<VisualizationProps> = ({ state, dispatch }) => {
             </Tabs>
         </>
     );
-}
+};
 
 export default Visualization;
