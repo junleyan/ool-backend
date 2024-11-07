@@ -111,11 +111,11 @@ const InfoCard: FC<InfoCardProps> = ({ dataset, showTags, showFormats, state, di
                                             title="Download file"
                                         >
                                             <div className="flex items-center">
-                                                <span>{resource.format}</span>
+                                                <span className="text-white">{resource.format}</span>
                                                 {resourceTypes.download.includes(resource.format) ? (
-                                                    <Download className="ml-1" size={14} />
+                                                    <Download className="ml-1" color="white" size={14} />
                                                 ) : (
-                                                    <ExternalLink className="ml-1" size={14} />
+                                                    <ExternalLink className="ml-1" color="white" size={14} />
                                                 )}
                                             </div>
                                         </Badge>
