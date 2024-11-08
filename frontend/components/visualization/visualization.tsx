@@ -254,7 +254,7 @@ const Visualization: FC<VisualizationProps> = ({ state, dispatch }) => {
                                                         yAxisKeys={state.graphSetting.y} />
                                                     :
                                                     <Card className="w-full mt-5 flex flex-col items-center justify-center text-center">
-                                                        <CardTitle className="m-5">Unfortunately, this dataset can't be graphed</CardTitle>
+                                                        <CardTitle className="m-5">Unfortunately, this dataset can&apos;t be graphed</CardTitle>
                                                         <CardContent className="flex items-center space-x-3">
                                                             <Button
                                                                 disabled={state.isLoadingChat}
