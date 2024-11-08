@@ -1,16 +1,19 @@
-import { Dispatch, FC, useState, useEffect } from "react";
+import { Dispatch, FC, useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "../ui/card";
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { State } from "@/app/page";
 import { ScrollArea } from "../ui/scroll-area";
 import { Button } from "../ui/button";
-import { ArrowUp, ArrowDown, ArrowUpDown, SlidersHorizontal, CornerDownLeft } from "lucide-react";
+import { ArrowUp, ArrowDown, ArrowUpDown, SlidersHorizontal, CornerDownLeft, MessageSquareText, Sheet } from "lucide-react";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuCheckboxItem } from "../ui/dropdown-menu";
 import Graph from "./graph";
 import { data } from "@/utils/data";
 import { ChatBubble, ChatBubbleAvatar, ChatBubbleMessage } from "../ui/chat/chat-bubble";
 import { ChatInput } from "../ui/chat/chat-input";
+import { ScrollAreaViewport } from "@radix-ui/react-scroll-area";
+import { toast } from "sonner";
+import { Skeleton } from "../ui/skeleton";
 
 interface VisualizationProps {
     state: State;
@@ -22,6 +25,7 @@ const Visualization: FC<VisualizationProps> = ({ state, dispatch }) => {
     const [visibleColumns, setVisibleColumns] = useState<{ [key: string]: boolean }>({});
     const [activeTab, setActiveTab] = useState<string>("table");
     const [message, setMessage] = useState("");
+    const viewportRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         setVisibleColumns(Object.keys(state.csv[0] || {}).reduce((acc, key) => ({ ...acc, [key]: true }), {}));
@@ -31,7 +35,14 @@ const Visualization: FC<VisualizationProps> = ({ state, dispatch }) => {
         if (!state.graphSetting && activeTab === "graph") {
             fetchGraphSetting();
         }
+        dispatch({ type: "subStage", payload: activeTab });
     }, [activeTab]);
+
+    useEffect(() => {
+        if (viewportRef.current) {
+            viewportRef.current.scrollIntoView(false);
+        }
+    }, [state.isLoadingChat, state.chat]);
 
     const fetchGraphSetting = async () => {
         if (state.selectedDataset) {
@@ -82,9 +93,26 @@ const Visualization: FC<VisualizationProps> = ({ state, dispatch }) => {
     };
 
     const handleSendMessage = () => {
-        if (message.trim()) {
-            dispatch({ type: "chat", payload: [...state.chat, { type: "user", content: message }] });
-            setMessage(""); // Clear input after sending
+        if (state.chat.length < 20) {
+            if (message.trim()) {
+                dispatch({ type: "chat", payload: [...state.chat, { type: "user", content: message }] });
+                dispatch({ type: "isLoadingChat", payload: true });
+                setMessage("");
+            }
+        }
+        else {
+            toast('You have reached the chat limit!', {
+                description: (
+                    "Reset to start a new conversation?"
+                ),
+                action: {
+                    label: "Reset",
+                    onClick: () => {
+                        dispatch({ type: "chat", payload: [] });
+                        toast("Reset done!");
+                    }
+                }
+            })
         }
     };
 
@@ -95,16 +123,35 @@ const Visualization: FC<VisualizationProps> = ({ state, dispatch }) => {
                     <TabsTrigger value="table">Data Table</TabsTrigger>
                     <TabsTrigger disabled={state.isLoadingCSV} value="graph">Chart</TabsTrigger>
                     <TabsTrigger value="chat">Chat</TabsTrigger>
-                    <TabsTrigger value="notifications">Notifications</TabsTrigger>
                 </TabsList>
                 {
                     state.isLoadingCSV ?
                         (
                             <>
-                                <TabsContent value="table">Loading...</TabsContent>
-                                <TabsContent value="graph">Loading...</TabsContent>
-                                <TabsContent value="chat">Loading...</TabsContent>
-                                <TabsContent value="notifications">Loading...</TabsContent>
+                                <TabsContent value="table">
+                                    {Array.from({ length: 9 }).map((_, index) => (
+                                        <Skeleton
+                                            key={index}
+                                            className="aspect-video h-12 mt-4 w-full rounded-lg bg-muted/50"
+                                        />
+                                    ))}
+                                </TabsContent>
+                                <TabsContent value="graph">
+                                    {Array.from({ length: 6 }).map((_, index) => (
+                                        <Skeleton
+                                            key={index}
+                                            className="aspect-video h-20 mt-4 w-full rounded-lg bg-muted/50"
+                                        />
+                                    ))}
+                                </TabsContent>
+                                <TabsContent value="chat">
+                                    {Array.from({ length: 8 }).map((_, index) => (
+                                        <Skeleton
+                                            key={index}
+                                            className="aspect-video h-14 mt-4 w-full rounded-lg bg-muted/50"
+                                        />
+                                    ))}
+                                </TabsContent>
                             </>
                         )
                         :
@@ -206,10 +253,41 @@ const Visualization: FC<VisualizationProps> = ({ state, dispatch }) => {
                                                         xAxisKey={state.graphSetting.x}
                                                         yAxisKeys={state.graphSetting.y} />
                                                     :
-                                                    <>Cannot graph</>
+                                                    <Card className="w-full mt-5 flex flex-col items-center justify-center text-center">
+                                                        <CardTitle className="m-5">Unfortunately, this dataset can't be graphed</CardTitle>
+                                                        <CardContent className="flex items-center space-x-3">
+                                                            <Button
+                                                                disabled={state.isLoadingChat}
+                                                                variant="outline"
+                                                                className="flex items-center justify-center"
+                                                                onClick={() => setActiveTab('table')}
+                                                            >
+                                                                <Sheet className="h-4 w-4 mr-2" />
+                                                                Go to Data Table
+                                                            </Button>
+                                                            <Button
+                                                                disabled={state.isLoadingChat}
+                                                                variant="outline"
+                                                                className="flex items-center justify-center"
+                                                                onClick={() => setActiveTab('chat')}
+                                                            >
+                                                                <MessageSquareText className="h-4 w-4 mr-2" />
+                                                                Go to Chat
+                                                            </Button>
+                                                        </CardContent>
+                                                    </Card>
+
+
                                             )
                                             :
-                                            <>Loading...</>
+                                            <>
+                                                {Array.from({ length: 6 }).map((_, index) => (
+                                                    <Skeleton
+                                                        key={index}
+                                                        className="aspect-video h-20 mt-4 w-full rounded-lg bg-muted/50"
+                                                    />
+                                                ))}
+                                            </>
                                     }
                                 </TabsContent>
                                 <TabsContent value="chat">
@@ -220,57 +298,50 @@ const Visualization: FC<VisualizationProps> = ({ state, dispatch }) => {
                                         </CardHeader>
                                         <CardContent className="grid">
                                             <ScrollArea className="flex flex-col h-[calc(100vh-375px)]">
-                                                <div className="flex flex-col flex-grow space-y-3">
-                                                    <div className="flex justify-start">
-                                                        <ChatBubble variant="received">
-                                                            <ChatBubbleAvatar fallback="AI" />
-                                                            <ChatBubbleMessage variant="received">
-                                                                Aloha! What question can I answer for you?
-                                                            </ChatBubbleMessage>
-                                                        </ChatBubble>
+                                                <ScrollAreaViewport>
+                                                    <div className="flex flex-col flex-grow space-y-3" ref={viewportRef}>
+                                                        <div className="flex justify-start">
+                                                            <ChatBubble variant="received">
+                                                                <ChatBubbleAvatar fallback="AI" />
+                                                                <ChatBubbleMessage variant="received">
+                                                                    Aloha! What question can I answer for you?
+                                                                </ChatBubbleMessage>
+                                                            </ChatBubble>
+                                                        </div>
+                                                        {
+                                                            state.chat.map((msg) => {
+                                                                return msg.type === 'user' ? (
+                                                                    <div className="flex justify-end mr-3">
+                                                                        <ChatBubble variant="sent">
+                                                                            <ChatBubbleAvatar fallback="You" />
+                                                                            <ChatBubbleMessage variant="sent">
+                                                                                {msg.content}
+                                                                            </ChatBubbleMessage>
+                                                                        </ChatBubble>
+                                                                    </div>
+                                                                ) : (
+                                                                    <div className="flex justify-start">
+                                                                        <ChatBubble variant="received">
+                                                                            <ChatBubbleAvatar fallback="AI" />
+                                                                            <ChatBubbleMessage variant="received">
+                                                                                {msg.content}
+                                                                            </ChatBubbleMessage>
+                                                                        </ChatBubble>
+                                                                    </div>
+                                                                );
+                                                            })
+                                                        }
+                                                        {
+                                                            state.isLoadingChat &&
+                                                            <div className="flex justify-start">
+                                                                <ChatBubble variant="received">
+                                                                    <ChatBubbleAvatar fallback="AI" />
+                                                                    <ChatBubbleMessage isLoading />
+                                                                </ChatBubble>
+                                                            </div>
+                                                        }
                                                     </div>
-                                                    {
-                                                        state.chat.map((msg) => {
-                                                            return msg.type === 'user' ? (
-                                                                <div className="flex justify-end mr-3">
-                                                                    <ChatBubble variant="sent">
-                                                                        <ChatBubbleAvatar fallback="You" />
-                                                                        <ChatBubbleMessage variant="sent">
-                                                                            {msg.content}
-                                                                        </ChatBubbleMessage>
-                                                                    </ChatBubble>
-                                                                </div>
-                                                            ) : (
-                                                                <div className="flex justify-start">
-                                                                    <ChatBubble variant="received">
-                                                                        <ChatBubbleAvatar fallback="AI" />
-                                                                        <ChatBubbleMessage variant="received">
-                                                                            {msg.content}
-                                                                        </ChatBubbleMessage>
-                                                                    </ChatBubble>
-                                                                </div>
-                                                            );
-                                                        })
-                                                    }
-
-                                                    <div className="flex justify-end mr-3">
-                                                        <ChatBubble variant="sent">
-                                                            <ChatBubbleAvatar fallback="You" />
-                                                            <ChatBubbleMessage variant="sent">
-                                                                Hello, how has your day been? I hope you are doing well.
-                                                            </ChatBubbleMessage>
-                                                        </ChatBubble>
-                                                    </div>
-                                                    <div className="flex justify-start">
-                                                        <ChatBubble variant="received">
-                                                            <ChatBubbleAvatar fallback="AI" />
-                                                            <ChatBubbleMessage isLoading />
-                                                        </ChatBubble>
-                                                    </div>
-                                                </div>
-                                                <Card className="mt-3">
-                                                    <CardContent>{JSON.stringify(state.chat)}</CardContent>
-                                                </Card>
+                                                </ScrollAreaViewport>
                                             </ScrollArea>
                                         </CardContent>
                                         <CardFooter className="flex items-center">
@@ -281,6 +352,7 @@ const Visualization: FC<VisualizationProps> = ({ state, dispatch }) => {
                                                 className="min-h-12 resize-none rounded-lg p-3 ring-current flex-1 mr-3"
                                             />
                                             <Button
+                                                disabled={state.isLoadingChat || message.trim().length === 0}
                                                 className="ml-auto gap-1.5"
                                                 onClick={handleSendMessage}
                                             >
