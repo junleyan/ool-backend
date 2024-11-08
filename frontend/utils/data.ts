@@ -1,4 +1,4 @@
-import { CSV, GraphSetting } from "@/app/page";
+import { Chat, CSV, GraphSetting } from "@/app/page";
 import axios from "axios";
 
 export interface SelectOption {
@@ -82,6 +82,21 @@ export const data = {
         } catch (error) {
             console.error('Error fetching X and Y axis:', error);
             throw error;
+        }
+    },
+
+    async getChatResponse(name: string, chat: Chat[]): Promise<string> {
+        try {
+            const queryParams = new URLSearchParams();
+            if (name && chat) {
+                queryParams.append('name', name);
+                queryParams.append('chat', JSON.stringify(chat));
+            }
+            const response = await axios.get(`https://ottl.vercel.app/api/get/chat?${queryParams.toString()}`);
+            return response.data.data;
+        } catch (error) {
+            console.error('Error fetching chat response:', error);
+            return "failed";
         }
     }
 };
