@@ -1,6 +1,10 @@
 "use client"
-
+import React, { useCallback, useRef } from 'react';
 import { Line, LineChart, CartesianGrid, XAxis, YAxis, Tooltip } from "recharts"
+import { Download } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { toPng } from 'html-to-image';
+
 
 import {
     Card,
@@ -39,6 +43,37 @@ interface GraphProps {
 }
 
 export function Graph({ data, title, subtitle, xAxisKey, yAxisKeys, yAxisLabel }: GraphProps) {
+    const captureRef = useRef<HTMLDivElement>(null);
+
+    const handleCapture = useCallback(() => {
+        if (captureRef.current === null) {
+            return;
+        }
+    
+        // Apply background color
+        captureRef.current.style.backgroundColor = 'white';
+    
+        toPng(captureRef.current, { cacheBust: true })
+            .then((dataUrl) => {
+                // Remove background color after capturing
+                if (captureRef.current) {
+                    captureRef.current.style.backgroundColor = '';
+                }
+    
+                const link = document.createElement('a');
+                link.download = 'capture.png';
+                link.href = dataUrl;
+                link.click();
+            })
+            .catch((error) => {
+                // Remove background color in case of error
+                if (captureRef.current) {
+                    captureRef.current.style.backgroundColor = '';
+                }
+                console.error('Error capturing image:', error);
+            });
+    }, [captureRef]);
+
     // Create a default config object based on yAxisKeys with explicit typing
     const defaultConfig: ChartConfig = yAxisKeys.reduce((acc, key, index) => {
         acc[key as string] = {
@@ -64,7 +99,19 @@ export function Graph({ data, title, subtitle, xAxisKey, yAxisKeys, yAxisLabel }
     return (
         <Card className="mt-4">
             <CardHeader>
-                <CardTitle>{title}</CardTitle>
+                <div className="flex justify-between items-center">
+                    <CardTitle>{title}</CardTitle>
+                    <Badge
+                        variant="secondary"
+                        className="m-1 flex justify-center items-center cursor-pointer transition-transform duration-200 hover:scale-110 rounded-full p-2"
+                        onClick={handleCapture}
+                    >
+                        <Download 
+                            className="cursor-pointer" 
+                            size={26}
+                        />
+                    </Badge>
+                </div>
                 <CardDescription>{subtitle}</CardDescription>
             </CardHeader>
             <CardContent>
