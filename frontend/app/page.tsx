@@ -64,6 +64,7 @@ export interface Tag {
 }
 
 export interface Resource {
+    url: string;
     format: string;
     state: string;
 }
