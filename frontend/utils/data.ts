@@ -98,5 +98,19 @@ export const data = {
             console.error('Error fetching chat response:', error);
             return "failed";
         }
+    },
+
+    async getChatQuestions(name: string): Promise<string[]> {
+        try {
+            const queryParams = new URLSearchParams();
+            if (name) {
+                queryParams.append('name', name);
+            }
+            const response = await axios.get(`https://ottl.vercel.app/api/get/question_suggestions?${queryParams.toString()}`);
+            return response.data.data.questions;
+        } catch (error) {
+            console.error('Error fetching chat questions:', error);
+            return [];
+        }
     }
 };

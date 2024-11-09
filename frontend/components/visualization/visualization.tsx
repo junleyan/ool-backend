@@ -35,6 +35,9 @@ const Visualization: FC<VisualizationProps> = ({ state, dispatch }) => {
         if (!state.graphSetting && activeTab === "graph") {
             fetchGraphSetting();
         }
+        if (state.chatQuestions.length === 0 && activeTab === "chat") {
+            fetchChatQuestions();
+        }
         dispatch({ type: "subStage", payload: activeTab });
     }, [activeTab]);
 
@@ -51,6 +54,13 @@ const Visualization: FC<VisualizationProps> = ({ state, dispatch }) => {
             dispatch({ type: "graphSetting", payload: DATA });
         }
     };
+
+    const fetchChatQuestions = async () => {
+        if (state.selectedDataset) {
+            const DATA = await data.getChatQuestions(state.selectedDataset.name);
+            dispatch({ type: "chatQuestions", payload: DATA });
+        }
+    }
 
     const sortedData = [...state.csv].sort((a, b) => {
         if (!sortConfig) return 0;
@@ -92,27 +102,33 @@ const Visualization: FC<VisualizationProps> = ({ state, dispatch }) => {
         }));
     };
 
-    const handleSendMessage = () => {
-        if (state.chat.length < 20) {
-            if (message.trim()) {
-                dispatch({ type: "chat", payload: [...state.chat, { type: "user", content: message }] });
-                dispatch({ type: "isLoadingChat", payload: true });
-                setMessage("");
-            }
+    const handleSendMessage = (index: number | null) => {
+        if (index) {
+            dispatch({ type: "chat", payload: [...state.chat, { type: "user", content: state.chatQuestions[index] }] });
+            dispatch({ type: "isLoadingChat", payload: true });
         }
         else {
-            toast('You have reached the chat limit!', {
-                description: (
-                    "Reset to start a new conversation?"
-                ),
-                action: {
-                    label: "Reset",
-                    onClick: () => {
-                        dispatch({ type: "chat", payload: [] });
-                        toast("Reset done!");
-                    }
+            if (state.chat.length < 20) {
+                if (message.trim()) {
+                    dispatch({ type: "chat", payload: [...state.chat, { type: "user", content: message }] });
+                    dispatch({ type: "isLoadingChat", payload: true });
+                    setMessage("");
                 }
-            })
+            }
+            else {
+                toast('You have reached the chat limit!', {
+                    description: (
+                        "Reset to start a new conversation?"
+                    ),
+                    action: {
+                        label: "Reset",
+                        onClick: () => {
+                            dispatch({ type: "chat", payload: [] });
+                            toast("Reset done!");
+                        }
+                    }
+                })
+            }
         }
     };
 
@@ -309,6 +325,30 @@ const Visualization: FC<VisualizationProps> = ({ state, dispatch }) => {
                                                             </ChatBubble>
                                                         </div>
                                                         {
+                                                            state.chatQuestions.length > 0 && state.chat.length === 0 &&
+                                                            <ChatBubble variant="received">
+                                                                <ChatBubbleAvatar fallback="AI" />
+                                                                <ChatBubbleMessage variant="received" className="flex flex-col">
+                                                                    <b>Here are some suggestion questions you can ask</b>
+                                                                    {
+                                                                        state.chatQuestions.map((question, index) => {
+                                                                            return (
+                                                                                <div key={index} className="flex items-center space-x-2"> {/* Updated line */}
+                                                                                    <span>
+                                                                                        -{" "}
+                                                                                        <u onClick={() => handleSendMessage(index)} className="cursor-pointer">
+                                                                                            {question}
+                                                                                        </u>
+                                                                                    </span>
+                                                                                </div>
+                                                                            )
+                                                                        })
+                                                                    }
+                                                                </ChatBubbleMessage>
+                                                            </ChatBubble>
+                                                        }
+
+                                                        {
                                                             state.chat.map((msg) => {
                                                                 return msg.type === 'user' ? (
                                                                     <div className="flex justify-end mr-3">
@@ -354,7 +394,7 @@ const Visualization: FC<VisualizationProps> = ({ state, dispatch }) => {
                                             <Button
                                                 disabled={state.isLoadingChat || message.trim().length === 0}
                                                 className="ml-auto gap-1.5"
-                                                onClick={handleSendMessage}
+                                                onClick={() => handleSendMessage(null)}
                                             >
                                                 Send Message
                                                 <CornerDownLeft />
