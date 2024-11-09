@@ -11,6 +11,8 @@ import DatasetToolbar from "@/components/datasets/dataset-toolbar";
 import Datasets from "@/components/datasets/datasets";
 import Visualization from "@/components/visualization/visualization";
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuShortcut, ContextMenuTrigger } from "@/components/ui/context-menu";
+import { toast } from "sonner";
+import VisualizeToolbar from "@/components/visualization/visualize-toolbar";
 
 export interface State {
     filters: {
@@ -28,6 +30,7 @@ export interface State {
     isLoadingDatasets: boolean;
     isLoadingCSV: boolean;
     stage: string;
+    subStage: string;
     datasetSearchQuery: string;
     datasetSort: string;
     datasetShowTags: boolean;
@@ -36,6 +39,8 @@ export interface State {
     selectedDataset: Dataset | null;
     csv: CSV[];
     graphSetting: GraphSetting | null;
+    chat: Chat[];
+    isLoadingChat: boolean;
 }
 
 export interface Dataset {
@@ -66,6 +71,11 @@ export interface Resource {
 
 export interface CSV {
     [key: string]: string;
+}
+
+export interface Chat {
+    type: string
+    content: string
 }
 
 export interface GraphSetting {
@@ -104,6 +114,7 @@ export default function Home() {
         isLoadingDatasets: true,
         isLoadingCSV: true,
         stage: 'select',
+        subStage: 'table',
         datasetSearchQuery: '',
         datasetSort: 'time descending',
         datasetShowTags: true,
@@ -111,7 +122,9 @@ export default function Home() {
         datasetShowBookmarkOnly: false,
         selectedDataset: null,
         csv: [],
-        graphSetting: null
+        graphSetting: null,
+        chat: [],
+        isLoadingChat: false
     }
 
     const [state, dispatch] = useReducer(reducer, INITIAL_STATE);
@@ -143,6 +156,12 @@ export default function Home() {
         }
     }, [state.selectedDataset]);
 
+    useEffect(() => {
+        if (state.isLoadingChat) {
+            fetchChatResponse();
+        }
+    }, [state.isLoadingChat]);
+
     const axiosHandler = async () => {
         const DATA = await data.getFilters();
         dispatch({ type: "filters", payload: DATA.filters });
@@ -165,6 +184,7 @@ export default function Home() {
         dispatch({ type: "csv", payload: DATA });
         dispatch({ type: "isLoadingCSV", payload: false });
         dispatch({ type: "graphSetting", payload: null });
+        dispatch({ type: "chat", payload: [] });
     }
 
     const handleStageChange = (stage: string) => {
@@ -175,6 +195,25 @@ export default function Home() {
         dispatch({ type: "organization", payload: null });
         dispatch({ type: "groups", payload: [] });
         dispatch({ type: "tags", payload: [] });
+    }
+
+    const fetchChatResponse = async () => {
+        if (state.selectedDataset) {
+            const DATA = await data.getChatResponse(state.selectedDataset.name, state.chat);
+            if (DATA === 'failed') {
+                toast("Failed to fetch response")
+                const PREV_CHAT = [...state.chat];
+                PREV_CHAT.pop();
+                dispatch({ type: "isLoadingChat", payload: false });
+                dispatch({ type: "chat", payload: PREV_CHAT });
+            }
+            else {
+                const PREV_CHAT = [...state.chat];
+                PREV_CHAT.push({type: 'assistant', content: DATA})
+                dispatch({ type: "chat", payload: PREV_CHAT });
+                dispatch({ type: "isLoadingChat", payload: false });
+            }
+        }
     }
 
     return (
@@ -199,7 +238,7 @@ export default function Home() {
                                             <BreadcrumbSeparator className="hidden md:block" />
                                             <BreadcrumbItem className={`cursor-pointer ${state.stage !== 'visualize' ? 'opacity-50' : 'opacity-100'}`}>
                                                 <BreadcrumbLink onClick={() => handleStageChange('visualize')}>
-                                                    Data Visualization
+                                                    Analyze
                                                 </BreadcrumbLink>
                                             </BreadcrumbItem>
                                         </>
@@ -209,6 +248,10 @@ export default function Home() {
                             {
                                 state.stage === 'select' &&
                                 <DatasetToolbar state={state} dispatch={dispatch} />
+                            }
+                            {
+                                state.stage === 'visualize' &&
+                                <VisualizeToolbar state={state} dispatch={dispatch} />
                             }
                         </header>
                         <main>
