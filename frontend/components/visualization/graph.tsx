@@ -44,35 +44,51 @@ interface GraphProps {
 
 export function Graph({ data, title, subtitle, xAxisKey, yAxisKeys, yAxisLabel }: GraphProps) {
     const captureRef = useRef<HTMLDivElement>(null);
+    const downloadButtonRef = useRef<HTMLDivElement>(null);
 
     const handleCapture = useCallback(() => {
-        if (captureRef.current === null) {
+        if (captureRef.current === null || downloadButtonRef.current === null) {
             return;
         }
     
-        // Apply background color
+        // Apply background color and hide download button
         captureRef.current.style.backgroundColor = 'white';
+        downloadButtonRef.current.style.visibility = 'hidden';
     
         toPng(captureRef.current, { cacheBust: true })
             .then((dataUrl) => {
-                // Remove background color after capturing
+                // Remove background color and show download button after capturing
                 if (captureRef.current) {
                     captureRef.current.style.backgroundColor = '';
                 }
+                if (downloadButtonRef.current) {
+                    downloadButtonRef.current.style.visibility = 'visible';
+                }
     
                 const link = document.createElement('a');
-                link.download = 'capture.png';
+                link.download = `${sanitizeFileName(title)}.png`;
                 link.href = dataUrl;
                 link.click();
             })
             .catch((error) => {
-                // Remove background color in case of error
+                // Remove background color and show download button in case of error
                 if (captureRef.current) {
                     captureRef.current.style.backgroundColor = '';
                 }
+                if (downloadButtonRef.current) {
+                    downloadButtonRef.current.style.visibility = 'visible';
+                }
                 console.error('Error capturing image:', error);
             });
-    }, [captureRef]);
+    }, [captureRef, downloadButtonRef]);
+
+    function sanitizeFileName(fileName: string): string {
+        // Replace spaces with dashes
+        let sanitized = fileName.replace(/\s+/g, '-');
+        // Remove all characters not allowed in file names
+        sanitized = sanitized.replace(/[^a-zA-Z0-9._-]/g, '');
+        return sanitized;
+    }
 
     // Create a default config object based on yAxisKeys with explicit typing
     const defaultConfig: ChartConfig = yAxisKeys.reduce((acc, key, index) => {
@@ -97,20 +113,22 @@ export function Graph({ data, title, subtitle, xAxisKey, yAxisKeys, yAxisLabel }
     );
 
     return (
-        <Card className="mt-4">
+        <Card ref={captureRef} className="mt-4">
             <CardHeader>
                 <div className="flex justify-between items-center">
                     <CardTitle>{title}</CardTitle>
-                    <Badge
-                        variant="secondary"
-                        className="m-1 flex justify-center items-center cursor-pointer transition-transform duration-200 hover:scale-110 rounded-full p-2"
-                        onClick={handleCapture}
-                    >
-                        <Download 
-                            className="cursor-pointer" 
-                            size={26}
-                        />
-                    </Badge>
+                    <div ref={downloadButtonRef}>
+                        <Badge
+                            variant="secondary"
+                            className="m-1 flex justify-center items-center cursor-pointer transition-transform duration-200 hover:scale-110 rounded-full p-2"
+                            onClick={handleCapture}
+                        >
+                            <Download 
+                                className="cursor-pointer" 
+                                size={26}
+                            />
+                        </Badge>
+                    </div>
                 </div>
                 <CardDescription>{subtitle}</CardDescription>
             </CardHeader>
