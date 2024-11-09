@@ -3,6 +3,7 @@ import { State } from "@/app/page";
 import { House, Paintbrush } from "lucide-react";
 import { Dispatch } from "react";
 import { Button } from "@/components/ui/button";
+import { data } from "@/utils/data";
 
 interface VisualizeToolbarProps {
     state: State;
@@ -10,6 +11,19 @@ interface VisualizeToolbarProps {
 }
 
 const VisualizeToolbar = ({ state, dispatch }: VisualizeToolbarProps) => {
+
+    const fetchChatQuestions = async () => {
+        if (state.selectedDataset) {
+            const DATA = await data.getChatQuestions(state.selectedDataset.name);
+            dispatch({ type: "chatQuestions", payload: DATA });
+        }
+    }
+
+    const handleReset = () => {
+        dispatch({ type: "chat", payload: [] });
+        fetchChatQuestions();
+    }
+
     return (
         <>
             <div className="relative ml-auto">
@@ -19,7 +33,7 @@ const VisualizeToolbar = ({ state, dispatch }: VisualizeToolbarProps) => {
             </div>
             {
                 state.subStage === 'chat' &&
-                <Button disabled={state.isLoadingChat} variant="outline" className="flex items-center" onClick={() => dispatch({ type: "chat", payload: [] })}>
+                <Button disabled={state.isLoadingChat} variant="outline" className="flex items-center" onClick={handleReset}>
                     <Paintbrush className="h-4 w-4" />
                     Reset
                 </Button>

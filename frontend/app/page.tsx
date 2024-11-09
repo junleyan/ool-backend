@@ -41,6 +41,7 @@ export interface State {
     graphSetting: GraphSetting | null;
     chat: Chat[];
     isLoadingChat: boolean;
+    chatQuestions: string[];
 }
 
 export interface Dataset {
@@ -124,7 +125,8 @@ export default function Home() {
         csv: [],
         graphSetting: null,
         chat: [],
-        isLoadingChat: false
+        isLoadingChat: false,
+        chatQuestions: []
     }
 
     const [state, dispatch] = useReducer(reducer, INITIAL_STATE);
@@ -185,6 +187,7 @@ export default function Home() {
         dispatch({ type: "isLoadingCSV", payload: false });
         dispatch({ type: "graphSetting", payload: null });
         dispatch({ type: "chat", payload: [] });
+        dispatch({ type: "chatQuestions", payload: [] });
     }
 
     const handleStageChange = (stage: string) => {
