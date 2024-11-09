@@ -16,7 +16,7 @@ export const getXYAxis = async (csv, info) => {
                     "content": [
                         {
                             "type": "text",
-                            "text": "Provided are dataset description and sample data, Ignore the values of the X and Y axis when writing the title and subtitle"
+                            "text": "Provided are dataset description and sample data, Ignore the values of the X and Y axis when writing the title and subtitle. Text or Datetime values like 01/01/2000 12:00:00 AM should not be graphable"
                         }
                     ]
                 },
@@ -35,6 +35,24 @@ export const getXYAxis = async (csv, info) => {
                         {
                             "type": "text",
                             "text": "{\n  \"title\": \"Annual Electricity Cost and Consumption in Hawaii\",\n  \"subtitle\": \"Trends in Electricity Expenses Across Different Counties (2006-2010)\",\n  \"x\": \"X v_alues\",\n  \"y\": [\n    \"City &amp; County of Honolulu\",\n    \"Maui County\",\n    \"Hawaii country\",\n    \"kauai\",\n    \"State Cost\"\n  ],\n  \"graphable\": true\n}"
+                        }
+                    ]
+                },
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "WTI Barrel of Oil Future Prices\nDaily WTI Contract 1 Future Prices\n{\n \"DateOfPrice\": \"01/03/2006 12:00:00 AM\",\n\"Fuel\": \"WTI Future Contract 1\",\n\"Price\": \"63.14\"\n},\n{\n\"DateOfPrice\": \"01/04/2006 12:00:00 AM\",\n\"Fuel\": \"WTI Future Contract 1\",\n\"Price\": \"63.42\"\n},\n{\n\"DateOfPrice\": \"01/05/2006 12:00:00 AM\",\n\"Fuel\": \"WTI Future Contract 1\",\n\"Price\": \"62.79\"\n}"
+                        }
+                    ]
+                },
+                {
+                    "role": "assistant",
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "{\"title\":\"Daily Future Prices of WTI Barrel of Oil\",\"subtitle\":\"Price Trends of WTI Future Contract 1\",\"x\":\"DateOfPrice\",\"y\":[\"Price\"],\"graphable\":false}"
                         }
                     ]
                 },

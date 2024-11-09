@@ -1,5 +1,10 @@
-import { useState } from "react";
-import { Line, LineChart, CartesianGrid, XAxis, YAxis, Tooltip } from "recharts";
+"use client"
+import React, { useCallback, useRef, useState } from 'react';
+import { Line, LineChart, CartesianGrid, XAxis, YAxis, Tooltip } from "recharts"
+import { Download } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { toPng } from 'html-to-image';
+
 
 import {
     Card,
@@ -51,15 +56,68 @@ interface GraphProps {
 }
 
 export function Graph({ data, title, subtitle, xAxisKey, yAxisKeys, yAxisLabel }: GraphProps) {
-    // Get all keys in data as potential X and Y axis keys
+    const captureRef = useRef<HTMLDivElement>(null);
+    const downloadButtonRef = useRef<HTMLDivElement>(null);
+    const toggleButtonRef = useRef<HTMLDivElement>(null);
+    const titleRef = useRef<HTMLDivElement>(null);
+
+    const handleCapture = useCallback(() => {
+        if (captureRef.current === null || downloadButtonRef.current === null || toggleButtonRef.current === null || titleRef.current == null) {
+            return;
+        }
+
+        // Apply background color and hide download button
+        captureRef.current.style.backgroundColor = 'white';
+        downloadButtonRef.current.style.visibility = 'hidden';
+        toggleButtonRef.current.style.visibility = 'hidden';
+        titleRef.current.style.color = 'black';
+
+        toPng(captureRef.current, { cacheBust: true })
+            .then((dataUrl) => {
+                // Remove background color and show download button after capturing
+                if (captureRef.current) {
+                    captureRef.current.style.backgroundColor = '';
+                }
+                if (downloadButtonRef.current) {
+                    downloadButtonRef.current.style.visibility = 'visible';
+                }
+                if (toggleButtonRef.current) {
+                    toggleButtonRef.current.style.visibility = 'visible';
+                }
+                if (titleRef.current) {
+                    titleRef.current.style.color = '';
+                }
+
+                const link = document.createElement('a');
+                link.download = `${sanitizeFileName(title)}.png`;
+                link.href = dataUrl;
+                link.click();
+            })
+            .catch((error) => {
+                // Remove background color and show download button in case of error
+                if (captureRef.current) {
+                    captureRef.current.style.backgroundColor = '';
+                }
+                if (downloadButtonRef.current) {
+                    downloadButtonRef.current.style.visibility = 'visible';
+                }
+                console.error('Error capturing image:', error);
+            });
+    }, [captureRef, downloadButtonRef, downloadButtonRef]);
+
+    function sanitizeFileName(fileName: string): string {
+        // Replace spaces with dashes
+        let sanitized = fileName.replace(/\s+/g, '-');
+        // Remove all characters not allowed in file names
+        sanitized = sanitized.replace(/[^a-zA-Z0-9._-]/g, '');
+        return sanitized;
+    }
+
     const allKeys = Object.keys(data[0] || {}) as (keyof DataEntry)[];
 
-    // State for the currently selected Y-axis keys
     const [visibleYAxisKeys, setVisibleYAxisKeys] = useState(yAxisKeys);
-    // State for the currently selected X-axis key
     const [selectedXAxisKey, setSelectedXAxisKey] = useState(xAxisKey);
 
-    // Create a default config object based on allKeys, assigning colors for each key
     const defaultConfig: ChartConfig = allKeys.reduce((acc, key, index) => {
         acc[key as string] = {
             label: key as string,
@@ -121,101 +179,117 @@ export function Graph({ data, title, subtitle, xAxisKey, yAxisKeys, yAxisLabel }
     };
 
     return (
-        <Card className="mt-4">
-            <CardHeader>
-                <CardTitle>{title}</CardTitle>
-                <CardDescription>{subtitle}</CardDescription>
-            </CardHeader>
-            <CardContent>
-                <ChartContainer config={defaultConfig}>
-                    <LineChart
-                        data={sortedData} // Pass the sorted data to the chart for ordered X-axis
-                        margin={{ left: 0, right: 12, bottom: 25 }}
-                    >
-                        <CartesianGrid vertical={false} />
-                        <XAxis
-                            type="number"
-                            domain={[minXAxisValue, maxXAxisValue]}
-                            dataKey={selectedXAxisKey as string}
-                            tickLine={false}
-                            axisLine={false}
-                            tickMargin={8}
-                            label={{
-                                value: selectedXAxisKey, // Display the selected X-axis key name as the label
-                                position: 'insideBottom',
-                                offset: -20,
-                                style: { textAnchor: 'middle', fontSize: '12px', fill: '#666' },
-                            }}
-                        />
-                        <YAxis
-                            domain={[minYAxisValue, maxYAxisValue]} // Use the calculated Y-axis range
-                            label={{
-                                value: yAxisLabel || "Count",
-                                angle: -90,
-                                position: "insideLeft",
-                                offset: 5,
-                                style: { textAnchor: 'middle', fontSize: '12px', fill: '#666' },
-                            }}
-                        />
-                        <Tooltip content={<ChartTooltipContent indicator="dot" />} />
-                        {visibleYAxisKeys.map((key, index) => (
-                            <Line
-                                key={String(key)}
-                                dataKey={String(key)}
-                                type="linear"
-                                name={String(defaultConfig[key as string]?.label || key)}
-                                stroke={defaultConfig[key as string]?.color}
-                                dot={false}
-                                strokeWidth={2}
-                            />
-                        ))}
-                    </LineChart>
-                </ChartContainer>
-            </CardContent>
-            <CardFooter>
-                <div className="flex w-full items-center justify-between text-sm">
-                    {/* Y-Axis Toggle */}
-                    <div className="flex items-center gap-2">
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="outline" className="flex items-center">
-                                    <SlidersHorizontal className="h-4 w-4" />
-                                    <span className="ml-1">Toggle Axes</span>
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent className="w-44">
-                                {/* X-Axis Selection */}
-                                <DropdownMenuLabel>Select X-Axis</DropdownMenuLabel>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuRadioGroup value={selectedXAxisKey as string} onValueChange={(value) => changeXAxisKey(value as keyof DataEntry)}>
-                                    {allKeys.map((key) => (
-                                        <DropdownMenuRadioItem key={key as string} value={key as string}>
-                                            {defaultConfig[key as string]?.label || key}
-                                        </DropdownMenuRadioItem>
-                                    ))}
-                                </DropdownMenuRadioGroup>
-
-                                <DropdownMenuSeparator />
-
-                                {/* Y-Axis Toggles */}
-                                <DropdownMenuLabel>Toggle Y-Axis</DropdownMenuLabel>
-                                <DropdownMenuSeparator />
-                                {allKeys.map((key) => (
-                                    <DropdownMenuCheckboxItem
-                                        key={key as string}
-                                        checked={visibleYAxisKeys.includes(key)}
-                                        onCheckedChange={() => toggleYAxisKey(key)}
-                                    >
-                                        {defaultConfig[key as string]?.label || key}
-                                    </DropdownMenuCheckboxItem>
-                                ))}
-                            </DropdownMenuContent>
-                        </DropdownMenu>
+        <div className="mt-4">
+            <Card ref={captureRef}>
+                <CardHeader>
+                    <div className="flex justify-between items-center">
+                        <CardTitle ref={titleRef}>{title}</CardTitle>
+                        <div ref={downloadButtonRef}>
+                            <Badge
+                                variant="secondary"
+                                className="m-1 flex justify-center items-center cursor-pointer transition-transform duration-200 hover:scale-110 rounded-full p-2"
+                                onClick={handleCapture}
+                            >
+                                <Download
+                                    className="cursor-pointer"
+                                    size={26}
+                                />
+                            </Badge>
+                        </div>
                     </div>
-                    <div className="text-muted-foreground">Powered by <b>OpenAI</b></div>
-                </div>
-            </CardFooter>
-        </Card>
+                    <CardDescription>{subtitle}</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <ChartContainer config={defaultConfig}>
+                        <LineChart
+                            data={sortedData} // Pass the sorted data to the chart for ordered X-axis
+                            margin={{ left: 0, right: 12, bottom: 25 }}
+                        >
+                            <CartesianGrid vertical={false} />
+                            <XAxis
+                                type="number"
+                                domain={[minXAxisValue, maxXAxisValue]}
+                                dataKey={selectedXAxisKey as string}
+                                tickLine={false}
+                                axisLine={false}
+                                tickMargin={8}
+                                label={{
+                                    value: selectedXAxisKey, // Display the selected X-axis key name as the label
+                                    position: 'insideBottom',
+                                    offset: -20,
+                                    style: { textAnchor: 'middle', fontSize: '12px', fill: '#666' },
+                                }}
+                            />
+                            <YAxis
+                                domain={[minYAxisValue, maxYAxisValue]} // Use the calculated Y-axis range
+                                label={{
+                                    value: yAxisLabel || "Count",
+                                    angle: -90,
+                                    position: "insideLeft",
+                                    offset: 5,
+                                    style: { textAnchor: 'middle', fontSize: '12px', fill: '#666' },
+                                }}
+                            />
+                            <Tooltip content={<ChartTooltipContent indicator="dot" />} />
+                            {visibleYAxisKeys.map((key, index) => (
+                                <Line
+                                    key={String(key)}
+                                    dataKey={String(key)}
+                                    type="linear"
+                                    name={String(defaultConfig[key as string]?.label || key)}
+                                    stroke={defaultConfig[key as string]?.color}
+                                    dot={false}
+                                    strokeWidth={2}
+                                />
+                            ))}
+                        </LineChart>
+                    </ChartContainer>
+                </CardContent>
+                <CardFooter ref={toggleButtonRef}>
+                    <div className="flex w-full items-center justify-between text-sm">
+                        {/* Y-Axis Toggle */}
+                        <div className="flex items-center gap-2">
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="outline" className="flex items-center">
+                                        <SlidersHorizontal className="h-4 w-4" />
+                                        <span className="ml-1">Toggle Axes</span>
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent className="w-44">
+                                    {/* X-Axis Selection */}
+                                    <DropdownMenuLabel>Select X-Axis</DropdownMenuLabel>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuRadioGroup value={selectedXAxisKey as string} onValueChange={(value) => changeXAxisKey(value as keyof DataEntry)}>
+                                        {allKeys.map((key) => (
+                                            <DropdownMenuRadioItem key={key as string} value={key as string}>
+                                                {defaultConfig[key as string]?.label || key}
+                                            </DropdownMenuRadioItem>
+                                        ))}
+                                    </DropdownMenuRadioGroup>
+
+                                    <DropdownMenuSeparator />
+
+                                    {/* Y-Axis Toggles */}
+                                    <DropdownMenuLabel>Toggle Y-Axis</DropdownMenuLabel>
+                                    <DropdownMenuSeparator />
+                                    {allKeys.map((key) => (
+                                        <DropdownMenuCheckboxItem
+                                            key={key as string}
+                                            checked={visibleYAxisKeys.includes(key)}
+                                            onCheckedChange={() => toggleYAxisKey(key)}
+                                        >
+                                            {defaultConfig[key as string]?.label || key}
+                                        </DropdownMenuCheckboxItem>
+                                    ))}
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        </div>
+                        <div className="text-muted-foreground">Powered by <b>OpenAI</b></div>
+                    </div>
+                </CardFooter>
+            </Card>
+        </div>
     );
 }
 
