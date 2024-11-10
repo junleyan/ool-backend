@@ -55,8 +55,10 @@ const InfoCard: FC<InfoCardProps> = ({ dataset, showTags, showFormats, state, di
     const handleCardHeaderClick = () => {
         const previousSelectDataset = state.selectedDataset;
         dispatch({ type: "stage", payload: "visualize" });
-        dispatch({ type: "recentDatasets", payload: updateRecentDatasets(dataset) });
+        const UPDATED_RECENT_DATASET = updateRecentDatasets(dataset);
+        dispatch({ type: "recentDatasets", payload: UPDATED_RECENT_DATASET });
         dispatch({ type: "selectedDataset", payload: dataset });
+        localStorage.setItem("recent-dataset", JSON.stringify(UPDATED_RECENT_DATASET));
         toast("Dataset Selected!", {
             description: (
                 <>

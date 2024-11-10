@@ -135,6 +135,9 @@ export default function Home() {
 
     useEffect(() => {
         axiosHandler();
+        if (localStorage.getItem("recent-dataset")) {
+            dispatch({ type: "recentDatasets", payload: JSON.parse(localStorage.getItem("recent-dataset") || "[]") });
+        }
     }, []);
 
     useEffect(() => {
