@@ -103,7 +103,7 @@ const Visualization: FC<VisualizationProps> = ({ state, dispatch }) => {
     };
 
     const handleSendMessage = (index: number | null) => {
-        if (index) {
+        if (index !== null) {
             dispatch({ type: "chat", payload: [...state.chat, { type: "user", content: state.chatQuestions[index] }] });
             dispatch({ type: "isLoadingChat", payload: true });
         }
