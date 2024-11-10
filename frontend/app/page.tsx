@@ -51,8 +51,34 @@ export interface Dataset {
     title: string;
     notes: string;
     metadata_created: string;
+    metadata_modified: string;
+    author: string;
+    maintainer: string;
+    license_id: string;
+    organization: {
+        id: string;
+        name: string;
+        title: string;
+        type: string;
+        description: string;
+        image_url: string;
+        created: string;
+        is_organization: boolean;
+        approval_status: string;
+        state: string;
+    };
+    groups: Group[];
     tags: Tag[];
     resources: Resource[];
+}
+
+export interface Group {
+    description: string;
+    display_name: string;
+    id: string;
+    image_display_url: string;
+    name: string;
+    title: string;
 }
 
 export interface SelectOption {
@@ -66,6 +92,7 @@ export interface Tag {
 }
 
 export interface Resource {
+    last_modified: string | number | Date;
     url: string;
     format: string;
     state: string;
