@@ -2,6 +2,7 @@ import axios from "axios";
 import OpenAI from "openai";
 import { API_URL } from "./hawaiiDataApi.js";
 import { getRawCSV } from "../utils/getRawCSV.js";
+import { getDataset } from "../utils/getDataset.js";
 
 export const getXYAxis = async (csv, info) => {
     try {
@@ -303,6 +304,185 @@ export const getChatResponse = async (dataset_name, chat) => {
             throw new Error('Error parsing OpenAI response as JSON: ' + parseError.message + ' Response was: ' + responseText);
         }
         return jsonResponse.response;
+    } catch (error) {
+        throw new Error('Error fetching response from OpenAI: ' + error.message);
+    }
+};
+
+export const getDatasetSuggestions = async (persona) => {
+    try {
+        const apiUrl = `${API_URL}/api/3/action/package_search?rows=999`;
+        const [FIRST_RESPONSE, SECOND_RESPONSE] = await Promise.all([
+            axios.get(apiUrl),
+            axios.get(apiUrl + '&start=1000')
+        ]);
+        let DATA = [...FIRST_RESPONSE.data.result.results, ...SECOND_RESPONSE.data.result.results];
+        const SUCCESS = FIRST_RESPONSE.data.success && SECOND_RESPONSE.data.success;
+
+        if (SUCCESS) {
+            DATA = DATA.map(({ name, title }) => ({ name, title }));
+            const openai = new OpenAI({
+                apiKey: process.env.OPENAI_API_KEY,
+            });
+            const response = await openai.chat.completions.create({
+                model: "gpt-4o-mini",
+                messages: [
+                    {
+                        "role": "system",
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": `Based on the person's description provided by the user and provided list of dataset title: return a list of dataset that the person might like to look at\nDatasets:\n${JSON.stringify(DATA)}`
+                            }
+                        ]
+                    },
+                    {
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "A person who loves going to the farmers market"
+                            }
+                        ]
+                    },
+                    {
+                        "role": "assistant",
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "{\n  \"names\": [\"hawaii-farmer-s-markets\", \"snap-dollars-spent-at-farmers-markets\"]\n}"
+                            }
+                        ]
+                    },
+                    {
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": persona
+                            }
+                        ]
+                    }
+                ],
+                temperature: 1,
+                max_tokens: 2048,
+                top_p: 1,
+                frequency_penalty: 0,
+                presence_penalty: 0,
+                response_format: {
+                    "type": "json_schema",
+                    "json_schema": {
+                        "name": "market_schema",
+                        "strict": true,
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "names": {
+                                    "type": "array",
+                                    "description": "A list of dataset names.",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                }
+                            },
+                            "required": [
+                                "names"
+                            ],
+                            "additionalProperties": false
+                        }
+                    }
+                },
+            });
+            let responseText = response.choices[0].message.content.trim();
+
+            if (responseText.startsWith("```json")) {
+                responseText = responseText.replace(/^```json\s+/, "").replace(/```$/, "").trim();
+            }
+
+            let jsonResponse;
+            try {
+                jsonResponse = JSON.parse(responseText);
+            } catch (parseError) {
+                throw new Error('Error parsing OpenAI response as JSON: ' + parseError.message + ' Response was: ' + responseText);
+            }
+            return jsonResponse.names;
+        } else {
+            throw new Error('Failed to fetch dataset from Hawaii Open Data');
+        }
+    } catch (error) {
+        throw new Error('Error fetching response from OpenAI: ' + error.message);
+    }
+};
+
+export const getPersona = async (persona, name) => {
+    try {
+        const DATASET = await getDataset(name);
+        const openai = new OpenAI({
+            apiKey: process.env.OPENAI_API_KEY,
+        });
+
+        const response = await openai.chat.completions.create({
+            model: "gpt-4o-mini",
+            messages: [
+                {
+                    "role": "system",
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "The user will provide a persona description of an user that is using a dataset viewer app. Based on what dataset the user is viewing, return an updated version of the persona description. The updated version of the persona description should contain some characteristics of the previous persona. Make sure the persona description is short, does not contain time,  and must be under 30 words."
+                        }
+                    ]
+                },
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": `Current persona: ${persona}\nDataset: ${DATASET.title}\n${DATASET.notes}`
+                        }
+                    ]
+                }
+            ],
+            temperature: 1,
+            max_tokens: 2048,
+            top_p: 1,
+            frequency_penalty: 0,
+            presence_penalty: 0,
+            response_format: {
+                "type": "json_schema",
+                "json_schema": {
+                    "name": "persona_schema",
+                    "strict": true,
+                    "schema": {
+                        "type": "object",
+                        "properties": {
+                            "persona": {
+                                "type": "string",
+                                "description": "A description of the persona."
+                            }
+                        },
+                        "required": [
+                            "persona"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+        });
+
+        let responseText = response.choices[0].message.content.trim();
+
+        if (responseText.startsWith("```json")) {
+            responseText = responseText.replace(/^```json\s+/, "").replace(/```$/, "").trim();
+        }
+
+        let jsonResponse;
+        try {
+            jsonResponse = JSON.parse(responseText);
+        } catch (parseError) {
+            throw new Error('Error parsing OpenAI response as JSON: ' + parseError.message + ' Response was: ' + responseText);
+        }
+        return jsonResponse.persona;
     } catch (error) {
         throw new Error('Error fetching response from OpenAI: ' + error.message);
     }
