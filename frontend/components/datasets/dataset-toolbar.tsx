@@ -1,7 +1,8 @@
 import * as React from "react";
 import { State } from "@/app/page";
-import { Search, CalendarArrowUp, CalendarArrowDown, AArrowUp, AArrowDown, Check, SpellCheck, SlidersHorizontal } from "lucide-react";
+import { Search, CalendarArrowUp, CalendarArrowDown, AArrowUp, AArrowDown, Check, SpellCheck, SlidersHorizontal, CircleHelp } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Dispatch } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,6 +14,7 @@ import {
     DropdownMenuTrigger,
     DropdownMenuCheckboxItem
 } from "@/components/ui/dropdown-menu";
+import { toast } from "sonner";
 
 interface DatasetToolbarProps {
     state: State;
@@ -46,6 +48,53 @@ const DatasetToolbar = ({ state, dispatch }: DatasetToolbarProps) => {
         dispatch({ type: "datasetShowBookmarkOnly", payload: !state.datasetShowBookmarkOnly });
     };
 
+    const handleHelpClick = () => {
+        help();
+    }
+
+    const help = () => {
+        let toastDescription = "";
+        switch(state.stage) {
+            case "select":
+                toastDescription = (state.organization || state.groups || state.tags || state.datasetSearchQuery)
+                    ? "Select a dataset to view its information, tags, and formats."
+                    : "Use the search bar, filtering, and sorting options to find a dataset.";
+                break;
+                case "visualize":
+                    switch(state.subStage) {
+                        case "info":
+                            toastDescription = "Explore detailed information about the dataset, and view different download options";
+                            break;
+                        case "table":
+                            toastDescription = "Click on column headers to sort data, or click on 'View' to toggle columns";
+                            break;
+                        case "graph":
+                            toastDescription = "Use the settings to customize the chart. Click the download button to save the chart as an image.";
+                            break;
+                        case "chat":
+                            toastDescription = "Interact with the dataset through chat. Ask questions to get data-derived insights.";
+                            break;
+                    }
+                break;
+        }
+
+        toast("Tip:", {
+            description: (
+                <>
+                    <p>{toastDescription}</p>
+                </>
+            ),
+            duration: 5000,
+            action: {
+                label: 'X',
+                onClick: (e) => {
+                    e.preventDefault();
+                    toast.dismiss();
+                },
+            },
+        });
+    }
+
     const renderSortIcon = () => {
         switch (state.datasetSort) {
             case "time ascending":
@@ -75,11 +124,18 @@ const DatasetToolbar = ({ state, dispatch }: DatasetToolbarProps) => {
             </div>
 
             <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                    <Button variant="outline" className="flex items-center">
-                        {renderSortIcon()}
-                    </Button>
-                </DropdownMenuTrigger>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="outline" className="flex items-center">
+                                {renderSortIcon()}
+                            </Button>
+                        </DropdownMenuTrigger>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        Sort By
+                    </TooltipContent>
+                </Tooltip>
                 <DropdownMenuContent className="w-56">
                     <DropdownMenuLabel>Sort Options</DropdownMenuLabel>
                     <DropdownMenuSeparator />
@@ -108,12 +164,20 @@ const DatasetToolbar = ({ state, dispatch }: DatasetToolbarProps) => {
 
             {/* New Dropdown for Toggle Options */}
             <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                    <Button variant="outline" className="flex items-center mr-4">
-                        <SlidersHorizontal className="h-4 w-4" />
-                        <span className="ml-1">View</span>
-                    </Button>
-                </DropdownMenuTrigger>
+            <Tooltip>
+                <TooltipTrigger asChild>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="outline" className="flex items-center">
+                            <SlidersHorizontal className="h-4 w-4" />
+                            <span className="ml-1">View</span>
+                        </Button>
+                    </DropdownMenuTrigger>
+                </TooltipTrigger>
+                    <TooltipContent>
+                        Viewing Options
+                    </TooltipContent>
+                </Tooltip>
+
                 <DropdownMenuContent className="w-44">
                     <DropdownMenuLabel>Toggle View</DropdownMenuLabel>
                     <DropdownMenuSeparator />
@@ -128,6 +192,18 @@ const DatasetToolbar = ({ state, dispatch }: DatasetToolbarProps) => {
                     </DropdownMenuCheckboxItem>
                 </DropdownMenuContent>
             </DropdownMenu>
+
+            {/* Help Button */}
+            <Tooltip>
+                <TooltipTrigger asChild>
+                    <Button variant="outline" className="flex items-center mr-4" onClick={handleHelpClick}>
+                        <CircleHelp className="h-5 w-5"/>
+                    </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                    Help
+                </TooltipContent>
+            </Tooltip>
         </>
     );
 };
