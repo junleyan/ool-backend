@@ -1,15 +1,16 @@
-import { State } from "@/app/page"
+import { Dataset, State } from "@/app/page"
 import { Sidebar, SidebarContent, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarMenuAction, SidebarMenuSub, SidebarGroup, SidebarFooter } from "@/components/ui/sidebar"
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible"
 import { Badge } from "@/components/ui/badge"
 import Image from "next/image"
-import { Building, ChevronRightIcon, Tags, Users, X as CloseIcon, Sun, Moon } from "lucide-react"
+import { Building, ChevronRightIcon, Tags, Users, X as CloseIcon, Sun, Moon, Clock } from "lucide-react"
 import { Dispatch } from "react"
 import Combobox from "../filters/combobox"
 import MultiSelectCombobox from "../filters/multi-select-combobox"
 import { useTheme } from "next-themes"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu"
 import { Button } from "../ui/button"
+import { toast } from "sonner";
 
 interface FilterBadgeProps {
     value: string
@@ -54,6 +55,40 @@ const AppSidebar = ({ state, dispatch }: { state: State, dispatch: Dispatch<{ ty
     const handleRemove = (type: string, updatedValues: unknown[]) => {
         dispatch({ type, payload: updatedValues })
     }
+
+    const updateRecentDatasets = (dataset: Dataset) => {
+        const recentDatasets = state.recentDatasets;
+        const updatedRecentDatasets = recentDatasets.filter((recentDataset) => recentDataset.name !== dataset.name);
+        updatedRecentDatasets.unshift(dataset);
+        if (updatedRecentDatasets.length > 5) {
+            updatedRecentDatasets.pop();
+        }
+        return updatedRecentDatasets;
+    }
+
+    const handleRecentClick = (dataset: Dataset) => {
+        const previousSelectDataset = state.selectedDataset;
+        dispatch({ type: "stage", payload: "visualize" });
+        const UPDATED_RECENT_DATASET = updateRecentDatasets(dataset);
+        dispatch({ type: "recentDatasets", payload: UPDATED_RECENT_DATASET });
+        dispatch({ type: "selectedDataset", payload: dataset });
+        localStorage.setItem("recent-dataset", JSON.stringify(UPDATED_RECENT_DATASET));
+        toast("Dataset Selected!", {
+            description: (
+                <>
+                    <i>{dataset.title}</i>
+                </>
+            ),
+            action: {
+                label: "Undo",
+                onClick: () => {
+                    dispatch({ type: "stage", payload: "select" });
+                    dispatch({ type: "selectedDataset", payload: previousSelectDataset });
+                    toast("Undone Selection!");
+                }
+            }
+        });
+    };
 
     return (
         <Sidebar>
@@ -203,6 +238,45 @@ const AppSidebar = ({ state, dispatch }: { state: State, dispatch: Dispatch<{ ty
                                             />
                                         ))}
                                     </div>
+                                </CollapsibleContent>
+                            </SidebarMenuItem>
+                        </Collapsible>
+                    </SidebarMenu>
+
+                    {/* Recent Datasets */}
+                    <SidebarGroupLabel>Recent datasets you have visited</SidebarGroupLabel>
+                    <SidebarMenu className="mb-3">
+                        <Collapsible asChild defaultOpen={true}>
+                            <SidebarMenuItem>
+                                <SidebarMenuButton asChild tooltip="Tags">
+                                    <div className="flex items-center gap-2">
+                                        <Clock />
+                                        <span>Recent Datasets</span>
+                                    </div>
+                                </SidebarMenuButton>
+
+                                <CollapsibleTrigger asChild>
+                                    <SidebarMenuAction className="data-[state=open]:rotate-90 mr-2">
+                                        <ChevronRightIcon />
+                                        <span className="sr-only">Toggle</span>
+                                    </SidebarMenuAction>
+                                </CollapsibleTrigger>
+                                <CollapsibleContent>
+                                    <SidebarMenuSub>
+                                        {
+                                            state.recentDatasets && state.recentDatasets.length > 0 ? (
+                                                state.recentDatasets.map((dataset, index) => (
+                                                    <div key={index} onClick={() => handleRecentClick(dataset)} className="rounded-md border mt-2 px-4 py-3 text-sm cursor-pointer hover:shadow hover:-translate-y-0.5 hover:scale-1005 transform transition-transform">
+                                                        {dataset.title}
+                                                    </div>
+                                                ))
+                                            ) : (
+                                                <div className="rounded-md border px-4 py-3 text-sm">
+                                                    No recent datasets.
+                                                </div>
+                                            )
+                                        }
+                                    </SidebarMenuSub>
                                 </CollapsibleContent>
                             </SidebarMenuItem>
                         </Collapsible>
