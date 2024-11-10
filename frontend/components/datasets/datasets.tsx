@@ -17,7 +17,7 @@ interface InfoCardProps {
 
 const InfoCard: FC<InfoCardProps> = ({ dataset, showTags, showFormats, state, dispatch }) => {
     const resourceTypes = {
-        "download": [    "CSV", "GeoJSON", "ZIP", "KML", "JSON", "RDF", "XLSX", "KMZ", "XLS", "PDF"],
+        "download": ["CSV", "GeoJSON", "ZIP", "KML", "JSON", "RDF", "XLSX", "KMZ", "XLS", "PDF"],
         "web": ["HTML", "ArcGIS GeoServices REST API", "XML", "OGC WFS", "OGC WMS", "PDF", "MP4"]
     }
 
@@ -204,9 +204,18 @@ const Datasets: FC<{ state: State; dispatch: Dispatch<{ type: string; payload: u
                 spacing={2}
                 className="flex overflow-x-hidden"
             >
-                {sortedDatasets.map((dataset, index) => (
-                    <InfoCard key={index} dataset={dataset} showTags={state.datasetShowTags} showFormats={state.datasetShowFormats} state={state} dispatch={dispatch} />
-                ))}
+                {sortedDatasets
+                    .filter(dataset => dataset.resources.some(resource => resource.format === 'CSV'))
+                    .map((dataset, index) => (
+                        <InfoCard 
+                            key={index} 
+                            dataset={dataset} 
+                            showTags={state.datasetShowTags} 
+                            showFormats={state.datasetShowFormats} 
+                            state={state} 
+                            dispatch={dispatch} 
+                        />
+                    ))}
             </Masonry>
         </div>
     );
