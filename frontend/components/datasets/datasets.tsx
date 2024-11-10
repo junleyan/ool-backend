@@ -42,9 +42,20 @@ const InfoCard: FC<InfoCardProps> = ({ dataset, showTags, showFormats, state, di
         setIsBookmarked(!isBookmarked);
     };
 
+    const updateRecentDatasets = (dataset: Dataset) => {
+        const recentDatasets = state.recentDatasets;
+        const updatedRecentDatasets = recentDatasets.filter((recentDataset) => recentDataset.name !== dataset.name);
+        updatedRecentDatasets.unshift(dataset);
+        if (updatedRecentDatasets.length > 5) {
+            updatedRecentDatasets.pop();
+        }
+        return updatedRecentDatasets;
+    }
+
     const handleCardHeaderClick = () => {
         const previousSelectDataset = state.selectedDataset;
         dispatch({ type: "stage", payload: "visualize" });
+        dispatch({ type: "recentDatasets", payload: updateRecentDatasets(dataset) });
         dispatch({ type: "selectedDataset", payload: dataset });
         toast("Dataset Selected!", {
             description: (
