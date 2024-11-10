@@ -204,9 +204,18 @@ const Datasets: FC<{ state: State; dispatch: Dispatch<{ type: string; payload: u
                 spacing={2}
                 className="flex overflow-x-hidden"
             >
-                {sortedDatasets.map((dataset, index) => (
-                    <InfoCard key={index} dataset={dataset} showTags={state.datasetShowTags} showFormats={state.datasetShowFormats} state={state} dispatch={dispatch} />
-                ))}
+                {sortedDatasets
+                    .filter(dataset => dataset.resources.some(resource => resource.format === 'CSV'))
+                    .map((dataset, index) => (
+                        <InfoCard 
+                            key={index} 
+                            dataset={dataset} 
+                            showTags={state.datasetShowTags} 
+                            showFormats={state.datasetShowFormats} 
+                            state={state} 
+                            dispatch={dispatch} 
+                        />
+                    ))}
             </Masonry>
         </div>
     );
