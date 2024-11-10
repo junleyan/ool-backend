@@ -17,7 +17,7 @@ interface InfoCardProps {
 
 const InfoCard: FC<InfoCardProps> = ({ dataset, showTags, showFormats, state, dispatch }) => {
     const resourceTypes = {
-        "download": [    "CSV", "GeoJSON", "ZIP", "KML", "JSON", "RDF", "XLSX", "KMZ", "XLS", "PDF"],
+        "download": ["CSV", "GeoJSON", "ZIP", "KML", "JSON", "RDF", "XLSX", "KMZ", "XLS", "PDF"],
         "web": ["HTML", "ArcGIS GeoServices REST API", "XML", "OGC WFS", "OGC WMS", "PDF", "MP4"]
     }
 

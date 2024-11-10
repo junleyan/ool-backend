@@ -5,7 +5,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { State } from "@/app/page";
 import { ScrollArea } from "../ui/scroll-area";
 import { Button } from "../ui/button";
-import { ArrowUp, ArrowDown, ArrowUpDown, SlidersHorizontal, CornerDownLeft, MessageSquareText, Sheet } from "lucide-react";
+import { ArrowUp, ArrowDown, ArrowUpDown, SlidersHorizontal, CornerDownLeft, MessageSquareText, Sheet, Download, ExternalLink } from "lucide-react";
+import { FileText, FileJson, FileCode, } from "lucide-react";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuCheckboxItem } from "../ui/dropdown-menu";
 import Graph from "./graph";
 import { data } from "@/utils/data";
@@ -14,6 +15,8 @@ import { ChatInput } from "../ui/chat/chat-input";
 import { ScrollAreaViewport } from "@radix-ui/react-scroll-area";
 import { toast } from "sonner";
 import { Skeleton } from "../ui/skeleton";
+import { getFormatColor } from "@/utils/convert";
+
 
 interface VisualizationProps {
     state: State;
@@ -26,6 +29,11 @@ const Visualization: FC<VisualizationProps> = ({ state, dispatch }) => {
     const [activeTab, setActiveTab] = useState<string>("table");
     const [message, setMessage] = useState("");
     const viewportRef = useRef<HTMLDivElement>(null);
+
+    const resourceTypes = {
+        "download": ["CSV", "GeoJSON", "ZIP", "KML", "JSON", "RDF", "XLSX", "KMZ", "XLS", "PDF"],
+        "web": ["HTML", "ArcGIS GeoServices REST API", "XML", "OGC WFS", "OGC WMS", "PDF", "MP4"]
+    }
 
     useEffect(() => {
         setVisibleColumns(Object.keys(state.csv[0] || {}).reduce((acc, key) => ({ ...acc, [key]: true }), {}));
@@ -136,6 +144,7 @@ const Visualization: FC<VisualizationProps> = ({ state, dispatch }) => {
         <>
             <Tabs defaultValue="table" value={activeTab} onValueChange={setActiveTab} className="my-4 mx-5">
                 <TabsList>
+                    <TabsTrigger value="info">Information</TabsTrigger>
                     <TabsTrigger value="table">Data Table</TabsTrigger>
                     <TabsTrigger disabled={state.isLoadingCSV} value="graph">Chart</TabsTrigger>
                     <TabsTrigger value="chat">Chat</TabsTrigger>
@@ -144,6 +153,14 @@ const Visualization: FC<VisualizationProps> = ({ state, dispatch }) => {
                     state.isLoadingCSV ?
                         (
                             <>
+                                <TabsContent value="info">
+                                    {Array.from({ length: 4 }).map((_, index) => (
+                                        <Skeleton
+                                            key={index}
+                                            className="aspect-video h-12 mt-4 w-full rounded-lg bg-muted/50"
+                                        />
+                                    ))}
+                                </TabsContent>                            
                                 <TabsContent value="table">
                                     {Array.from({ length: 9 }).map((_, index) => (
                                         <Skeleton
@@ -173,6 +190,95 @@ const Visualization: FC<VisualizationProps> = ({ state, dispatch }) => {
                         :
                         (
                             <>
+                                <TabsContent value="info">
+                                    <Card className="mt-4 grid">
+                                        <CardHeader>
+                                            <CardTitle>{state.selectedDataset?.title}</CardTitle>
+                                            <CardDescription className="mt-4 w-full lg:w-3/5">
+                                                <div dangerouslySetInnerHTML={{ __html: state.selectedDataset?.notes || "" }} />
+                                            </CardDescription>
+                                        </CardHeader>
+                                        <CardContent className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                                            <Table className="mb-4 lg:mb-1">
+                                                <TableBody>
+                                                    <TableRow>
+                                                        <TableCell className="border-r font-bold">Author:</TableCell>
+                                                        <TableCell>{state.selectedDataset?.author || "N/A"}</TableCell>
+                                                    </TableRow>
+                                                    <TableRow>
+                                                        <TableCell className="border-r font-bold">Maintainer:</TableCell>
+                                                        <TableCell>{state.selectedDataset?.maintainer || "N/A"}</TableCell>
+                                                    </TableRow>
+                                                    <TableRow>
+                                                        <TableCell className="border-r font-bold">License:</TableCell>
+                                                        <TableCell>{state.selectedDataset?.license_id || "N/A"}</TableCell>
+                                                    </TableRow>
+                                                    <TableRow>
+                                                        <TableCell className="border-r font-bold">Organization:</TableCell>
+                                                        <TableCell>{state.selectedDataset?.organization.title || "N/A"}</TableCell>
+                                                    </TableRow>
+                                                    <TableRow>
+                                                        <TableCell className="border-r font-bold">Group:</TableCell>
+                                                        <TableCell>{state.selectedDataset?.groups?.[0]?.title || "N/A"}</TableCell>
+                                                    </TableRow>
+                                                    <TableRow>
+                                                        <TableCell className="border-r font-bold">Tags:</TableCell>
+                                                        <TableCell>{state.selectedDataset?.tags.map(tag => tag.display_name).join(', ') || "N/A"}</TableCell>
+                                                    </TableRow>
+                                                    <TableRow>
+                                                        <TableCell className="border-r font-bold">Created Date:</TableCell>
+                                                        <TableCell>{new Date(state.selectedDataset?.metadata_created || "").toLocaleDateString() || "N/A"}</TableCell>
+                                                    </TableRow>
+                                                    <TableRow>
+                                                        <TableCell className="border-r font-bold">Last Modified Date:</TableCell>
+                                                        <TableCell>{new Date(state.selectedDataset?.metadata_modified || "").toLocaleDateString() || "N/A"}</TableCell>
+                                                    </TableRow>
+                                                </TableBody>
+                                            </Table>
+                                            <Table>
+                                                <TableHeader className="mt-1">
+                                                    <TableRow>
+                                                        <TableHead className="border-r font-bold">Data</TableHead>
+                                                        <TableHead className="font-bold">Resources</TableHead>
+                                                    </TableRow>
+                                                </TableHeader>
+                                                <TableBody>
+                                                    {state.selectedDataset?.resources
+                                                        .filter((resource) => resource.format.length > 0)
+                                                        .map((resource, index) => (
+                                                            <TableRow key={index}>
+                                                                <TableCell className="border-r font-bold">{resource.format}</TableCell>
+                                                                <TableCell>
+                                                                    <a
+                                                                        href={resource.url}
+                                                                        target="_blank"
+                                                                        rel="noopener noreferrer"
+                                                                        title={
+                                                                            resourceTypes.download.includes(resource.format)
+                                                                                ? "Download " + resource.format
+                                                                                : "View " + resource.format
+                                                                        }
+                                                                    >
+                                                                        {resourceTypes.download.includes(resource.format) ? (
+                                                                            <span className="flex items-center space-x-2">
+                                                                                <span>Download</span>
+                                                                                <Download className="h-4 w-4" />
+                                                                            </span>
+                                                                        ) : (
+                                                                            <span className="flex items-center space-x-2">
+                                                                                <span>Open</span>
+                                                                                <ExternalLink className="h-4 w-4" />
+                                                                            </span>
+                                                                        )}
+                                                                    </a>
+                                                                </TableCell>
+                                                            </TableRow>
+                                                    ))}
+                                                </TableBody>
+                                            </Table>
+                                        </CardContent>
+                                    </Card>
+                                </TabsContent>
                                 <TabsContent value="table">
                                     <Card className="mt-4 grid">
                                         <CardHeader>
