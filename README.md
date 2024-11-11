@@ -2,6 +2,8 @@
 
 This project is a Next.js web application designed to simplify and enhance the discovery and analysis of publicly accessible government agency data.
 
+Deployed Application: https://ool-frontend.vercel.app
+
 ## Installation
 
 1. **Clone the Repository**
