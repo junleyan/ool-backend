@@ -1,4 +1,4 @@
-# Open Data Explorer
+# Hawaii Open Data Explorer
 
 This project is a Next.js web application designed to simplify and enhance the discovery and analysis of publicly accessible government agency data.
 
@@ -9,7 +9,7 @@ This project is a Next.js web application designed to simplify and enhance the d
    ```bash
    git clone https://github.com/HACC2024/Otter-Overlords.git
    ```
-
+---
 2. **Run the Frontend Application**
 
    Navigate to the frontend directory:
@@ -59,7 +59,7 @@ This project is a Next.js web application designed to simplify and enhance the d
    ```
 
    This will start the production server, and the application will be accessible at `http://localhost:3000`.
-
+---
 3. **Run the Backend Node.js Application**
 
    Navigate to the server directory in the root of the project:
