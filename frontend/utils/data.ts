@@ -112,5 +112,34 @@ export const data = {
             console.error('Error fetching chat questions:', error);
             return [];
         }
+    },
+
+    async getPersona(persona: string, name: string): Promise<string> {
+        try {
+            const queryParams = new URLSearchParams();
+            if (persona && name) {
+                queryParams.append('persona', persona);
+                queryParams.append('name', name);
+            }
+            const response = await axios.get(`https://ottl.vercel.app/api/get/persona?${queryParams.toString()}`);
+            return response.data.data;
+        } catch (error) {
+            console.error('Error fetching persona:', error);
+            return 'A Hawaii resident';
+        }
+    },
+
+    async getAISuggestions(persona: string): Promise<string[]> {
+        try {
+            const queryParams = new URLSearchParams();
+            if (persona) {
+                queryParams.append('persona', persona);
+            }
+            const response = await axios.get(`https://ottl.vercel.app/api/get/dataset_suggestions?${queryParams.toString()}`);
+            return response.data.data;
+        } catch (error) {
+            console.error('Error fetching persona:', error);
+            return [];
+        }
     }
 };
