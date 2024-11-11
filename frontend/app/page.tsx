@@ -10,7 +10,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import DatasetToolbar from "@/components/datasets/dataset-toolbar";
 import Datasets from "@/components/datasets/datasets";
 import Visualization from "@/components/visualization/visualization";
-import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuShortcut, ContextMenuTrigger } from "@/components/ui/context-menu";
 import { toast } from "sonner";
 import VisualizeToolbar from "@/components/visualization/visualize-toolbar";
 
@@ -43,6 +42,9 @@ export interface State {
     chat: Chat[];
     isLoadingChat: boolean;
     chatQuestions: string[];
+    isLoadingAISuggestions: boolean;
+    allDatasets: Dataset[];
+    displayAISuggestions: boolean;
 }
 
 export interface Dataset {
@@ -155,7 +157,10 @@ export default function Home() {
         graphSetting: null,
         chat: [],
         isLoadingChat: false,
-        chatQuestions: []
+        chatQuestions: [],
+        isLoadingAISuggestions: false,
+        allDatasets: [],
+        displayAISuggestions: false
     }
 
     const [state, dispatch] = useReducer(reducer, INITIAL_STATE);
@@ -165,13 +170,28 @@ export default function Home() {
         if (localStorage.getItem("recent-dataset")) {
             dispatch({ type: "recentDatasets", payload: JSON.parse(localStorage.getItem("recent-dataset") || "[]") });
         }
+        if (!localStorage.getItem("persona")) {
+            localStorage.setItem("persona", "A Hawaii resident");
+        }
     }, []);
+
+    useEffect(() => {
+        if (!state.displayAISuggestions && state.datasets.length > 0) {
+            dispatch({ type: "isLoadingFilters", payload: true });
+        }
+    }, [state.displayAISuggestions]);
 
     useEffect(() => {
         if (state.isLoadingFilters) {
             updateFilters();
         }
     }, [state.isLoadingFilters]);
+
+    useEffect(() => {
+        if (state.isLoadingAISuggestions) {
+            fetchAISuggestion();
+        }
+    }, [state.isLoadingAISuggestions]);
 
     useEffect(() => {
         if (!state.isLoadingFilters) {
@@ -187,6 +207,7 @@ export default function Home() {
         if (state.selectedDataset) {
             dispatch({ type: "isLoadingCSV", payload: true });
             updateCSV(state.selectedDataset.name);
+            fetchPersona();
         }
     }, [state.selectedDataset]);
 
@@ -200,6 +221,7 @@ export default function Home() {
         const DATA = await data.getFilters();
         dispatch({ type: "filters", payload: DATA.filters });
         dispatch({ type: "datasets", payload: DATA.results });
+        dispatch({ type: "allDatasets", payload: [...DATA.results] });
         dispatch({ type: "isLoadingFilters", payload: false });
         dispatch({ type: "isLoadingDatasets", payload: false });
     };
@@ -244,82 +266,91 @@ export default function Home() {
             }
             else {
                 const PREV_CHAT = [...state.chat];
-                PREV_CHAT.push({type: 'assistant', content: DATA})
+                PREV_CHAT.push({ type: 'assistant', content: DATA })
                 dispatch({ type: "chat", payload: PREV_CHAT });
                 dispatch({ type: "isLoadingChat", payload: false });
             }
         }
     }
 
+    const fetchPersona = async () => {
+        if (state.selectedDataset) {
+            if (localStorage.getItem('persona')) {
+                const DATA = await data.getPersona(localStorage.getItem('persona') || 'A Hawaii resident', state.selectedDataset.name);
+                localStorage.setItem('persona', DATA);
+            }
+        }
+    }
+
+    const fetchAISuggestion = async () => {
+        if (localStorage.getItem('persona')) {
+            const DATA = await data.getAISuggestions(localStorage.getItem('persona') || 'A Hawaii resident');
+            const DATASETS = state.allDatasets.filter(dataset => DATA.includes(dataset.name));
+            dispatch({ type: "datasets", payload: DATASETS });
+            dispatch({ type: "isLoadingAISuggestions", payload: false });
+            dispatch({ type: "displayAISuggestions", payload: true });
+        }
+    }
+
     return (
-        <ContextMenu>
-            <ContextMenuTrigger>
-                <SidebarProvider>
-                    <AppSidebar state={state} dispatch={dispatch} />
-                    <SidebarInset>
-                        <header className="flex sticky top-0 bg-background h-16 shrink-0 items-center gap-2 border-b px-4 z-10">
-                            <SidebarTrigger className="-ml-1" />
-                            <Separator orientation="vertical" className="mr-2 h-4" />
-                            <Breadcrumb>
-                                <BreadcrumbList>
-                                    <BreadcrumbItem className={`hidden cursor-pointer ${state.stage !== 'select' ? 'opacity-50' : 'opacity-100'} md:block`}>
-                                        <BreadcrumbLink onClick={() => handleStageChange('select')}>
-                                            Select Your Dataset
+        <SidebarProvider>
+            <AppSidebar state={state} dispatch={dispatch} />
+            <SidebarInset>
+                <header className="flex sticky top-0 bg-background h-16 shrink-0 items-center gap-2 border-b px-4 z-10">
+                    <SidebarTrigger className="-ml-1" />
+                    <Separator orientation="vertical" className="mr-2 h-4" />
+                    <Breadcrumb>
+                        <BreadcrumbList>
+                            <BreadcrumbItem className={`hidden cursor-pointer ${state.stage !== 'select' ? 'opacity-50' : 'opacity-100'} md:block`}>
+                                <BreadcrumbLink onClick={() => handleStageChange('select')}>
+                                    Select Your Dataset
+                                </BreadcrumbLink>
+                            </BreadcrumbItem>
+                            {
+                                state.selectedDataset &&
+                                <>
+                                    <BreadcrumbSeparator className="hidden md:block" />
+                                    <BreadcrumbItem className={`cursor-pointer ${state.stage !== 'visualize' ? 'opacity-50' : 'opacity-100'}`}>
+                                        <BreadcrumbLink onClick={() => handleStageChange('visualize')}>
+                                            Analyze
                                         </BreadcrumbLink>
                                     </BreadcrumbItem>
-                                    {
-                                        state.selectedDataset &&
-                                        <>
-                                            <BreadcrumbSeparator className="hidden md:block" />
-                                            <BreadcrumbItem className={`cursor-pointer ${state.stage !== 'visualize' ? 'opacity-50' : 'opacity-100'}`}>
-                                                <BreadcrumbLink onClick={() => handleStageChange('visualize')}>
-                                                    Analyze
-                                                </BreadcrumbLink>
-                                            </BreadcrumbItem>
-                                        </>
-                                    }
-                                </BreadcrumbList>
-                            </Breadcrumb>
-                            {
-                                state.stage === 'select' &&
-                                <DatasetToolbar state={state} dispatch={dispatch} />
+                                </>
                             }
-                            {
-                                state.stage === 'visualize' &&
-                                <VisualizeToolbar state={state} dispatch={dispatch} />
-                            }
-                        </header>
-                        <main>
-                            {
-                                state.isLoadingDatasets ?
-                                    <div className="flex flex-1 flex-col gap-4 mx-4 mt-4">
-                                        {Array.from({ length: 10 }).map((_, index) => (
-                                            <Skeleton
-                                                key={index}
-                                                className="aspect-video h-12 w-full rounded-lg bg-muted/50"
-                                            />
-                                        ))}
-                                    </div>
-                                    :
-                                    <>
-                                        {
-                                            state.stage === 'select' ?
-                                                <Datasets state={state} dispatch={dispatch} />
-                                                :
-                                                <Visualization state={state} dispatch={dispatch} />
-                                        }
-                                    </>
-                            }
-                        </main>
-                    </SidebarInset>
-                </SidebarProvider>
-            </ContextMenuTrigger>
-            <ContextMenuContent className="w-40">
-                <ContextMenuItem className="cursor-pointer" onClick={handleClearAllFilters}>
-                    Clear All Filters
-                    <ContextMenuShortcut>⌘[</ContextMenuShortcut>
-                </ContextMenuItem>
-            </ContextMenuContent>
-        </ContextMenu>
+                        </BreadcrumbList>
+                    </Breadcrumb>
+                    {
+                        state.stage === 'select' &&
+                        <DatasetToolbar state={state} dispatch={dispatch} />
+                    }
+                    {
+                        state.stage === 'visualize' &&
+                        <VisualizeToolbar state={state} dispatch={dispatch} />
+                    }
+                </header>
+                <main>
+                    {
+                        state.isLoadingDatasets || state.isLoadingFilters || state.isLoadingAISuggestions ?
+                            <div className="flex flex-1 flex-col gap-4 mx-4 mt-4">
+                                {Array.from({ length: 10 }).map((_, index) => (
+                                    <Skeleton
+                                        key={index}
+                                        className="aspect-video h-12 w-full rounded-lg bg-muted/50"
+                                    />
+                                ))}
+                            </div>
+                            :
+                            <>
+                                {
+                                    state.stage === 'select' ?
+                                        <Datasets state={state} dispatch={dispatch} />
+                                        :
+                                        <Visualization state={state} dispatch={dispatch} />
+                                }
+                            </>
+                    }
+                </main>
+            </SidebarInset>
+        </SidebarProvider>
     );
 }
