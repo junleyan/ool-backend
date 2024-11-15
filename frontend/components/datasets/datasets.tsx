@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui
 import { Badge } from "../ui/badge";
 import { getFormatColor } from "@/utils/convert";
 import Masonry from '@mui/lab/Masonry';
-import { Bookmark, BookmarkCheck } from "lucide-react";
+import { Bookmark, BookmarkCheck, Download, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
 
 interface InfoCardProps {
@@ -16,6 +16,11 @@ interface InfoCardProps {
 }
 
 const InfoCard: FC<InfoCardProps> = ({ dataset, showTags, showFormats, state, dispatch }) => {
+    const resourceTypes = {
+        "download": ["CSV", "GeoJSON", "ZIP", "KML", "JSON", "RDF", "XLSX", "KMZ", "XLS", "PDF"],
+        "web": ["HTML", "ArcGIS GeoServices REST API", "XML", "OGC WFS", "OGC WMS", "PDF", "MP4"]
+    }
+
     const [isBookmarked, setIsBookmarked] = useState(false);
 
     useEffect(() => {
@@ -37,10 +42,23 @@ const InfoCard: FC<InfoCardProps> = ({ dataset, showTags, showFormats, state, di
         setIsBookmarked(!isBookmarked);
     };
 
+    const updateRecentDatasets = (dataset: Dataset) => {
+        const recentDatasets = state.recentDatasets;
+        const updatedRecentDatasets = recentDatasets.filter((recentDataset) => recentDataset.name !== dataset.name);
+        updatedRecentDatasets.unshift(dataset);
+        if (updatedRecentDatasets.length > 5) {
+            updatedRecentDatasets.pop();
+        }
+        return updatedRecentDatasets;
+    }
+
     const handleCardHeaderClick = () => {
         const previousSelectDataset = state.selectedDataset;
         dispatch({ type: "stage", payload: "visualize" });
+        const UPDATED_RECENT_DATASET = updateRecentDatasets(dataset);
+        dispatch({ type: "recentDatasets", payload: UPDATED_RECENT_DATASET });
         dispatch({ type: "selectedDataset", payload: dataset });
+        localStorage.setItem("recent-dataset", JSON.stringify(UPDATED_RECENT_DATASET));
         toast("Dataset Selected!", {
             description: (
                 <>
@@ -98,13 +116,27 @@ const InfoCard: FC<InfoCardProps> = ({ dataset, showTags, showFormats, state, di
                             {dataset.resources
                                 .filter((resource) => resource.format.length > 0)
                                 .map((resource, index) => (
-                                    <Badge
-                                        key={index}
-                                        className="m-0.5"
-                                        style={{ backgroundColor: getFormatColor(resource.format) }}
-                                    >
-                                        {resource.format}
-                                    </Badge>
+                                    <a key={index} href={resource.url} target="_blank">
+                                        <Badge
+                                            key={index}
+                                            className="m-0.5"
+                                            style={{ backgroundColor: getFormatColor(resource.format) }}
+                                            title={
+                                                resourceTypes.download.includes(resource.format)
+                                                    ? "Download " + resource.format
+                                                    : "View " + resource.format
+                                            }
+                                        >
+                                            <div className="flex items-center">
+                                                <span className="text-white">{resource.format}</span>
+                                                {resourceTypes.download.includes(resource.format) ? (
+                                                    <Download className="ml-1" color="white" size={14} />
+                                                ) : (
+                                                    <ExternalLink className="ml-1" color="white" size={14} />
+                                                )}
+                                            </div>
+                                        </Badge>
+                                    </a>
                                 ))}
                         </div>
                     )}
@@ -172,9 +204,18 @@ const Datasets: FC<{ state: State; dispatch: Dispatch<{ type: string; payload: u
                 spacing={2}
                 className="flex overflow-x-hidden"
             >
-                {sortedDatasets.map((dataset, index) => (
-                    <InfoCard key={index} dataset={dataset} showTags={state.datasetShowTags} showFormats={state.datasetShowFormats} state={state} dispatch={dispatch} />
-                ))}
+                {sortedDatasets
+                    .filter(dataset => dataset.resources.some(resource => resource.format === 'CSV'))
+                    .map((dataset, index) => (
+                        <InfoCard 
+                            key={index} 
+                            dataset={dataset} 
+                            showTags={state.datasetShowTags} 
+                            showFormats={state.datasetShowFormats} 
+                            state={state} 
+                            dispatch={dispatch} 
+                        />
+                    ))}
             </Masonry>
         </div>
     );
