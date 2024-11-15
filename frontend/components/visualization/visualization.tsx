@@ -17,6 +17,7 @@ import { ScrollAreaViewport } from "@radix-ui/react-scroll-area";
 import { toast } from "sonner";
 import { Skeleton } from "../ui/skeleton";
 import { getFormatColor } from "@/utils/convert";
+import ReactMarkdown from "react-markdown";
 
 
 interface VisualizationProps {
@@ -517,7 +518,7 @@ const Visualization: FC<VisualizationProps> = ({ state, dispatch }) => {
                                                                         <ChatBubble variant="received">
                                                                             <ChatBubbleAvatar fallback="AI" />
                                                                             <ChatBubbleMessage variant="received">
-                                                                                {msg.content}
+                                                                                <ReactMarkdown>{msg.content}</ReactMarkdown>
                                                                             </ChatBubbleMessage>
                                                                         </ChatBubble>
                                                                     </div>
