@@ -415,21 +415,21 @@ const Visualization: FC<VisualizationProps> = ({ state, dispatch }) => {
                                 <TabsContent value="graph">
                                     {
                                         state.graphSetting ? (
-                                            state.graphSetting.graphable && state.graphSetting.x.length > 0 ? (
-                                                <Graph
-                                                    data={state.csv}
-                                                    title={state.graphSetting.title}
-                                                    subtitle={state.graphSetting.subtitle}
-                                                    xAxisKey={state.graphSetting.x}
-                                                    yAxisKeys={state.graphSetting.y}
-                                                />
-                                            ) : state.graphSetting.is_bar && state.graphSetting.barX.length ? (
+                                            state.graphSetting.is_bar && state.graphSetting.barX.length > 0 ? (
                                                 <BarChartComponent
                                                     data={state.csv}
                                                     title={state.graphSetting.title}
                                                     subtitle={state.graphSetting.subtitle}
                                                     xAxisKey={state.graphSetting.barX}
                                                     yAxisKeys={state.graphSetting.barY}
+                                                />
+                                            ) : state.graphSetting.graphable && state.graphSetting.x.length > 0 ? (
+                                                <Graph
+                                                    data={state.csv}
+                                                    title={state.graphSetting.title}
+                                                    subtitle={state.graphSetting.subtitle}
+                                                    xAxisKey={state.graphSetting.x}
+                                                    yAxisKeys={state.graphSetting.y}
                                                 />
                                             ) : (
                                                 <Card className="w-full mt-5 flex flex-col items-center justify-center text-center">
