@@ -433,7 +433,7 @@ const Visualization: FC<VisualizationProps> = ({ state, dispatch }) => {
                                                 />
                                             ) : (
                                                 <Card className="w-full mt-5 flex flex-col items-center justify-center text-center">
-                                                    <CardTitle className="m-5">Unfortunately, this dataset can&apos;t be graphed</CardTitle>
+                                                    <CardTitle className="m-5">This dataset cannot be graphed</CardTitle>
                                                     <CardContent className="flex items-center space-x-3">
                                                         <Button
                                                             disabled={state.isLoadingChat}
