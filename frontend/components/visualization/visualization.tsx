@@ -18,6 +18,7 @@ import { toast } from "sonner";
 import { Skeleton } from "../ui/skeleton";
 import { getFormatColor } from "@/utils/convert";
 import ReactMarkdown from "react-markdown";
+import BarChartComponent from "./barchart";
 
 
 interface VisualizationProps {
@@ -181,7 +182,7 @@ const Visualization: FC<VisualizationProps> = ({ state, dispatch }) => {
                                             className="aspect-video h-12 mt-4 w-full rounded-lg bg-muted/50"
                                         />
                                     ))}
-                                </TabsContent>                            
+                                </TabsContent>
                                 <TabsContent value="table">
                                     {Array.from({ length: 9 }).map((_, index) => (
                                         <Skeleton
@@ -321,7 +322,7 @@ const Visualization: FC<VisualizationProps> = ({ state, dispatch }) => {
                                                                     </a>
                                                                 </TableCell>
                                                             </TableRow>
-                                                    ))}
+                                                        ))}
                                                 </TableBody>
                                             </Table>
                                         </CardContent>
@@ -413,43 +414,49 @@ const Visualization: FC<VisualizationProps> = ({ state, dispatch }) => {
                                 </TabsContent>
                                 <TabsContent value="graph">
                                     {
-                                        state.graphSetting ?
-                                            (
-                                                state.graphSetting.graphable ?
-                                                    <Graph
-                                                        data={state.csv}
-                                                        title={state.graphSetting.title}
-                                                        subtitle={state.graphSetting.subtitle}
-                                                        xAxisKey={state.graphSetting.x}
-                                                        yAxisKeys={state.graphSetting.y} />
-                                                    :
-                                                    <Card className="w-full mt-5 flex flex-col items-center justify-center text-center">
-                                                        <CardTitle className="m-5">Unfortunately, this dataset can&apos;t be graphed</CardTitle>
-                                                        <CardContent className="flex items-center space-x-3">
-                                                            <Button
-                                                                disabled={state.isLoadingChat}
-                                                                variant="outline"
-                                                                className="flex items-center justify-center"
-                                                                onClick={() => setActiveTab('table')}
-                                                            >
-                                                                <Sheet className="h-4 w-4 mr-2" />
-                                                                Go to Data Table
-                                                            </Button>
-                                                            <Button
-                                                                disabled={state.isLoadingChat}
-                                                                variant="outline"
-                                                                className="flex items-center justify-center"
-                                                                onClick={() => setActiveTab('chat')}
-                                                            >
-                                                                <MessageSquareText className="h-4 w-4 mr-2" />
-                                                                Go to Chat
-                                                            </Button>
-                                                        </CardContent>
-                                                    </Card>
-
-
+                                        state.graphSetting ? (
+                                            state.graphSetting.graphable && state.graphSetting.x.length > 0 ? (
+                                                <Graph
+                                                    data={state.csv}
+                                                    title={state.graphSetting.title}
+                                                    subtitle={state.graphSetting.subtitle}
+                                                    xAxisKey={state.graphSetting.x}
+                                                    yAxisKeys={state.graphSetting.y}
+                                                />
+                                            ) : state.graphSetting.is_bar && state.graphSetting.barX.length ? (
+                                                <BarChartComponent
+                                                    data={state.csv}
+                                                    title={state.graphSetting.title}
+                                                    subtitle={state.graphSetting.subtitle}
+                                                    xAxisKey={state.graphSetting.barX}
+                                                    yAxisKeys={state.graphSetting.barY}
+                                                />
+                                            ) : (
+                                                <Card className="w-full mt-5 flex flex-col items-center justify-center text-center">
+                                                    <CardTitle className="m-5">Unfortunately, this dataset can&apos;t be graphed</CardTitle>
+                                                    <CardContent className="flex items-center space-x-3">
+                                                        <Button
+                                                            disabled={state.isLoadingChat}
+                                                            variant="outline"
+                                                            className="flex items-center justify-center"
+                                                            onClick={() => setActiveTab('table')}
+                                                        >
+                                                            <Sheet className="h-4 w-4 mr-2" />
+                                                            Go to Data Table
+                                                        </Button>
+                                                        <Button
+                                                            disabled={state.isLoadingChat}
+                                                            variant="outline"
+                                                            className="flex items-center justify-center"
+                                                            onClick={() => setActiveTab('chat')}
+                                                        >
+                                                            <MessageSquareText className="h-4 w-4 mr-2" />
+                                                            Go to Chat
+                                                        </Button>
+                                                    </CardContent>
+                                                </Card>
                                             )
-                                            :
+                                        ) : (
                                             <>
                                                 {Array.from({ length: 6 }).map((_, index) => (
                                                     <Skeleton
@@ -458,6 +465,7 @@ const Visualization: FC<VisualizationProps> = ({ state, dispatch }) => {
                                                     />
                                                 ))}
                                             </>
+                                        )
                                     }
                                 </TabsContent>
                                 <TabsContent value="chat">
