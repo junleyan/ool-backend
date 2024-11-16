@@ -17,7 +17,7 @@ export const getXYAxis = async (csv, info) => {
                     "content": [
                         {
                             "type": "text",
-                            "text": "Provided are dataset description and sample data, Ignore the values of the X and Y axis when writing the title and subtitle. Text or Datetime values like 01/01/2000 12:00:00 AM should not be graphable"
+                            "text": "Provided are dataset description and sample data, Ignore the values of the X and Y axis when writing the title and subtitle. X and Y axis should never have non-numeric character as value; with an exception to bar chart where only the X axis can have non-numeric character as value."
                         }
                     ]
                 },
@@ -26,7 +26,7 @@ export const getXYAxis = async (csv, info) => {
                     "content": [
                         {
                             "type": "text",
-                            "text": "DBEDT Hawaii Annual Electricity Cost And Consumption 2006-2010\nDBEDT Hawaii Annual Electricity Cost And Consumption 2006-2010\n[{\n \"X v_alues\": \"2006\",\n\"City &amp; County of Honolulu\": \"7700604915\",\n\"Maui County\": \"1266466780\",\n\"Hawaii country\": \"1148760827\",\n\"kauai\": \"452079711\",\n\"State Cost\": \"2190152387\",\n\"Location 1 (address)\": \"\",\n\"Location 1 (zip)\": \"\"\n},\n{\n\"X v_alues\": \"2007\",\n\"City &amp; County of Honolulu\": \"7675354990\",\n\"Maui County\": \"1280102549\",\n\"Hawaii country\": \"1162683764\",\n\"kauai\": \"466895789\",\n\"State Cost\": \"2253431463\",\n\"Location 1 (address)\": \"\",\n\"Location 1 (zip)\": \"\"\n},\n{\n\"X v_alues\": \"2008\",\n\"City &amp; County of Honolulu\": \"7555961805\",\n\"Maui County\": \"1239228345\",\n\"Hawaii country\": \"1141029607\",\n\"kauai\": \"453790517\",\n\"State Cost\": \"3033950142\",\n\"Location 1 (address)\": \"\",\n\"Location 1 (zip)\": \"\"\n}]"
+                            "text": "DBEDT Hawaii Annual Electricity Cost And Consumption 2006-2010\nDBEDT Hawaii Annual Electricity Cost And Consumption 2006-2010\n[{\n \"X v_alues\": \"2006\",\n\"City &amp; County of Honolulu\": \"7700604915\",\n\"Maui County\": \"1266466780\",\n\"Hawaii country\": \"1148760827\",\n\"Kauai County\": \"452079711\",\n\"State Cost\": \"2190152387\",\n\"Location 1 (address)\": \"\",\n\"Location 1 (city)\": \"\",\n\"Location 1 (state)\": \"\",\n\"Location 1 (zip)\": \"\"\n},\n{\n\"X Values\": \"2007\",\n\"City &amp; County of Honolulu\": \"7675354990\",\n\"Maui County\": \"1280102549\",\n\"Hawaii County\": \"1162683764\",\n\"Kauai County\": \"466895789\",\n\"State Cost\": \"2253431463\",\n\"Location 1 (address)\": \"\",\n\"Location 1 (city)\": \"\",\n\"Location 1 (state)\": \"\",\n\"Location 1 (zip)\": \"\"\n},\n{\n\"X Values\": \"2008\",\n\"City &amp; County of Honolulu\": \"7555961805\",\n\"Maui County\": \"1239228345\",\n\"Hawaii County\": \"1141029607\",\n\"Kauai County\": \"453790517\",\n\"State Cost\": \"3033950142\",\n\"Location 1 (address)\": \"\",\n\"Location 1 (city)\": \"\",\n\"Location 1 (state)\": \"\",\n\"Location 1 (zip)\": \"\"\n}]"
                         }
                     ]
                 },
@@ -35,7 +35,7 @@ export const getXYAxis = async (csv, info) => {
                     "content": [
                         {
                             "type": "text",
-                            "text": "{\n  \"title\": \"Annual Electricity Cost and Consumption in Hawaii\",\n  \"subtitle\": \"Trends in Electricity Expenses Across Different Counties (2006-2010)\",\n  \"x\": \"X v_alues\",\n  \"y\": [\n    \"City &amp; County of Honolulu\",\n    \"Maui County\",\n    \"Hawaii country\",\n    \"kauai\",\n    \"State Cost\"\n  ],\n  \"graphable\": true\n}"
+                            "text": "{\n  \"title\": \"Annual Electricity Cost and Consumption in Hawaii\",\n  \"subtitle\": \"Trends in Electricity Expenses Across Different Counties (2006-2010)\",\n  \"x\": \"X v_alues\",\n  \"y\": [\n    \"City &amp; County of Honolulu\",\n    \"Maui County\",\n    \"Hawaii country\",\n    \"Kauai County\",\n    \"State Cost\"\n  ],\n  \"graphable\": true,\n  \"is_bar\": true,\n  \"barX\": \"X v_alues\",\n  \"barY\": [\"City &amp; County of Honolulu\", \"Maui County\", \"Hawaii country\", \"Kauai County\", \"State Cost\"]\n}"
                         }
                     ]
                 },
@@ -44,7 +44,7 @@ export const getXYAxis = async (csv, info) => {
                     "content": [
                         {
                             "type": "text",
-                            "text": "WTI Barrel of Oil Future Prices\nDaily WTI Contract 1 Future Prices\n{\n \"DateOfPrice\": \"01/03/2006 12:00:00 AM\",\n\"Fuel\": \"WTI Future Contract 1\",\n\"Price\": \"63.14\"\n},\n{\n\"DateOfPrice\": \"01/04/2006 12:00:00 AM\",\n\"Fuel\": \"WTI Future Contract 1\",\n\"Price\": \"63.42\"\n},\n{\n\"DateOfPrice\": \"01/05/2006 12:00:00 AM\",\n\"Fuel\": \"WTI Future Contract 1\",\n\"Price\": \"62.79\"\n}"
+                            "text": "WTI Barrel of Oil Future Prices\nDaily WTI Contract 1 Future Prices\n[{\n \"DateOfPrice\": \"01/03/2006 12:00:00 AM\",\n\"Fuel\": \"WTI Future Contract 1\",\n\"Price\": \"63.14\",\n\"PhysicalUnit\": \"$/BBL\"\n},\n{\n\"DateOfPrice\": \"01/04/2006 12:00:00 AM\",\n\"Fuel\": \"WTI Future Contract 1\",\n\"Price\": \"63.42\",\n\"PhysicalUnit\": \"$/BBL\"\n},\n{\n\"DateOfPrice\": \"01/05/2006 12:00:00 AM\",\n\"Fuel\": \"WTI Future Contract 1\",\n\"Price\": \"62.79\",\n\"PhysicalUnit\": \"$/BBL\"\n}]"
                         }
                     ]
                 },
@@ -53,7 +53,61 @@ export const getXYAxis = async (csv, info) => {
                     "content": [
                         {
                             "type": "text",
-                            "text": "{\"title\":\"Daily Future Prices of WTI Barrel of Oil\",\"subtitle\":\"Price Trends of WTI Future Contract 1\",\"x\":\"DateOfPrice\",\"y\":[\"Price\"],\"graphable\":false}"
+                            "text": "{\"title\":\"Daily Future Prices of WTI Barrel of Oil\",\"subtitle\":\"Price Trends of WTI Future Contract 1\",\"x\":\"\",\"y\":[],\"graphable\":false,\"is_bar\":true,\"barX\": \"DateOfPrice\",\n  \"barY\": [\"Price\"]}"
+                        }
+                    ]
+                },
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "Electricity Prices: U.S. vs Hawaii (Source: EIA)\nElectricity Prices: U.S. vs Hawaii (Source: EIA)\n[{\n \"Date\": \"March 2015\",\n\"U.S.\": \"10.30\",\n\"Hawaii\": \"27.23\"\n},\n{\n\"Date\": \"June 2015\",\n\"U.S.\": \"10.64\",\n\"Hawaii\": \"26.46\"\n},\n{\n\"Date\": \"Sept 2015\",\n\"U.S.\": \"10.81\",\n\"Hawaii\": \"25.67\"\n}]"
+                        }
+                    ]
+                },
+                {
+                    "role": "assistant",
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "{\"title\":\"Electricity Prices Comparison: U.S. vs Hawaii\",\"subtitle\":\"Analyzing Electricity Costs Between U.S. and Hawaii\",\"x\":\"\",\"y\":[],\"graphable\":false,\"is_bar\":true,\"barX\": \"Date\",\n  \"barY\": [\"U.S.\", \"Hawaii\"]}"
+                        }
+                    ]
+                },
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "DBEDT Pie Chart Of Electric Hybrid Fossil Cars\nDBEDT Pie Chart Of Electric Hybrid Fossil Cars\n[{\n \"X Values\": \"Electric\",\n\"Series1\": \"0.1%\"\n},\n{\n\"X Values\": \"Hybrid\",\n\"Series1\": \"1.0%\"\n},\n{\n\"X Values\": \"Fossil fuel\",\n\"Series1\": \"99.0%\"\n}]"
+                        }
+                    ]
+                },
+                {
+                    "role": "assistant",
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "{\"title\":\"Distribution of Car Types: Electric, Hybrid, and Fossil Fuel\",\"subtitle\":\"Proportions of Different Types of Cars\",\"x\":\"\",\"y\":[],\"graphable\":false,\"is_bar\":false,\"barX\":\"\",\"barY\":[]}"
+                        }
+                    ]
+                },
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "Kauai County Births, Deaths, Marriages, Civil Unions 2012\nBirths, Deaths, marriages and civil unions in Kauai County\n[{\n \"Month of Occurrence\": \"January\",\n\"Birth\": \"73\",\n\"Deaths\": \"45\",\n\"Marriages\": \"148\",\n\"Civil Unions\": \"11\"\n},\n{\n\"Month of Occurrence\": \"February\",\n\"Birth\": \"53\",\n\"Deaths\": \"35\",\n\"Marriages\": \"190\",\n\"Civil Unions\": \"7\"\n},\n{\n\"Month of Occurrence\": \"March\",\n\"Birth\": \"73\",\n\"Deaths\": \"33\",\n\"Marriages\": \"223\",\n\"Civil Unions\": \"11\"\n}]"
+                        }
+                    ]
+                },
+                {
+                    "role": "assistant",
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "{\"title\":\"Monthly Statistics of Births, Deaths, Marriages, and Civil Unions in Kauai County\",\"subtitle\":\"Data Overview for 2012\",\"x\":\"\",\"y\":[],\"graphable\":false,\"is_bar\":true,\"barX\":\"Month of Occurrence\",\"barY\":[\"Birth\",\"Deaths\",\"Marriages\",\"Civil Unions\"]}"
                         }
                     ]
                 },
@@ -102,6 +156,21 @@ export const getXYAxis = async (csv, info) => {
                             "graphable": {
                                 "type": "boolean",
                                 "description": "Indicates whether the given CSV can be represented in a line chart."
+                            },
+                            "is_bar": {
+                                "type": "boolean",
+                                "description": "Indicates whether this given CSV can be graphed on a bar chart."
+                            },
+                            "barX": {
+                                "type": "string",
+                                "description": "The x value for bar representation."
+                            },
+                            "barY": {
+                                "type": "array",
+                                "description": "The y value(s) for bar representation.",
+                                "items": {
+                                    "type": "string"
+                                }
                             }
                         },
                         "required": [
@@ -109,7 +178,10 @@ export const getXYAxis = async (csv, info) => {
                             "subtitle",
                             "x",
                             "y",
-                            "graphable"
+                            "graphable",
+                            "is_bar",
+                            "barX",
+                            "barY"
                         ],
                         "additionalProperties": false
                     }
@@ -171,7 +243,7 @@ export const getQuestionSuggestions = async (dataset_name) => {
                 }
             ],
             temperature: 1,
-            max_tokens: 2048,
+            max_tokens: 5000,
             top_p: 1,
             frequency_penalty: 0,
             presence_penalty: 0,
@@ -265,7 +337,7 @@ export const getChatResponse = async (dataset_name, chat) => {
                 }))
             ],
             temperature: 1,
-            max_tokens: 2048,
+            max_tokens: 5000,
             top_p: 1,
             frequency_penalty: 0,
             presence_penalty: 0,
