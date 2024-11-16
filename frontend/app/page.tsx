@@ -1,7 +1,7 @@
 'use client';
 
 import AppSidebar from "@/components/sidebar/app-sidebar";
-import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
+import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
 import { Separator } from "@/components/ui/separator";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { useEffect, useReducer } from "react";
@@ -115,6 +115,9 @@ export interface GraphSetting {
     x: string
     y: string[]
     graphable: boolean
+    is_bar: boolean
+    barX: string
+    barY: string[]
 }
 
 function reducer(state: State, action: { type: string; payload: unknown }): State {
